@@ -1,15 +1,28 @@
-import logo from './logo.svg';
 import './App.css';
-import calculateNote from './notes';
+import noteFrequencyMap from './notes';
 
 function App() {
-  return (
-    <div>
-      A4 = 440hz
-        <br />
-        A# = {calculateNote(440, 1)}
-    </div>
-  );
+
+
+    let notesMap = noteFrequencyMap(440);
+    return (
+        <>
+            <div>
+                <h1>Options</h1>
+            </div>
+            <select multiple={true} style={{height:'90vh', width: '40px'}}>
+                {Object.entries(notesMap).map(([note, freq]) => {
+                    return <option value={note}>{note}</option>
+                })
+                }
+
+            </select>
+            <div>
+
+            </div>
+        </>
+    );
 }
+
 
 export default App;
