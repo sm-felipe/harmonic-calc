@@ -3,7 +3,8 @@ import noteFrequencyMap from './notes';
 import {useState} from "react";
 
 function calculateHarmonic(noteFrequency, harmonicNumber) {
-    return noteFrequency * harmonicNumber;
+    let number = noteFrequency * harmonicNumber;
+    return number.toFixed(2);
 }
 
 function App() {
@@ -13,9 +14,8 @@ function App() {
 
     return (
         <>
-            <div className={'flex-container'}>
+            <div className={'flex-container'} style={{maxWidth: '80px'}}>
                 <div className={'flex-child'}>
-                    <h1>Options</h1>
                     <select multiple={true}
                             onChange={selectNotes()}
                             style={{height: '90vh', width: '40px'}}>
@@ -45,7 +45,7 @@ function App() {
                         <tbody>
                         {selectedNotes.map((note) => {
                                 return <tr key={note}>
-                                    <td>{note + '(' + notesMap[note] + ')'}</td>
+                                    <td>{note + '(' + notesMap[note].toFixed(2) + ')'}</td>
                                     <td>{calculateHarmonic(notesMap[note], 1)}</td>
                                     <td>{calculateHarmonic(notesMap[note], 2)}</td>
                                     <td>{calculateHarmonic(notesMap[note], 3)}</td>
