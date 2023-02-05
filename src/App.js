@@ -4,7 +4,7 @@ import {useState} from "react";
 
 let notesMap = noteFrequencyMap(440);
 function calculateHarmonic(noteFrequency, harmonicNumber) {
-    let number = noteFrequency * harmonicNumber;
+    let number = noteFrequency * (harmonicNumber + 1);
     let nearestNote = findNearestNoteFrequency(number, notesMap);
     return number.toFixed(2) + ' ' + nearestNote
 }
