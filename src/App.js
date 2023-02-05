@@ -5,6 +5,7 @@ import {useState} from "react";
 let notesMap = noteFrequencyMap(440);
 function calculateHarmonic(noteFrequency, harmonicNumber) {
     let number = noteFrequency * (harmonicNumber + 1);
+    if(number > 22000 || number < 20) return 'OHR';
     let nearestNote = findNearestNoteFrequency(number, notesMap);
     return number.toFixed(2) + ' ' + nearestNote
 }
@@ -59,7 +60,10 @@ function App() {
                         <tbody>
                         {selectedNotes.map((note) => {
                                 return <tr key={note}>
-                                    <td>{note + '(' + notesMap[note].toFixed(2) + ')'}</td>
+                                    <td>{notesMap[note] >= 20 ?
+                                        note + '(' + notesMap[note].toFixed(2) + ')'
+                                        : 'OHR' + '(' + notesMap[note].toFixed(2) + ')'
+                                    }</td>
                                     <td>{calculateHarmonic(notesMap[note], 1)}</td>
                                     <td>{calculateHarmonic(notesMap[note], 2)}</td>
                                     <td>{calculateHarmonic(notesMap[note], 3)}</td>
