@@ -2,15 +2,29 @@ import './App.css';
 import noteFrequencyMap from './notes';
 import {useState} from "react";
 
+let notesMap = noteFrequencyMap(440);
 function calculateHarmonic(noteFrequency, harmonicNumber) {
     let number = noteFrequency * harmonicNumber;
-    return number.toFixed(2);
+    let nearestNote = findNearestNoteFrequency(number, notesMap);
+    return number.toFixed(2) + ' ' + nearestNote
+}
+
+function findNearestNoteFrequency(noteFrequency, notesMap) {
+    let nearestNoteFrequency = 0;
+    let nearestNote = '';
+    for (let [note, frequency] of Object.entries(notesMap)) {
+        if (Math.abs(noteFrequency - frequency) < Math.abs(noteFrequency - nearestNoteFrequency)) {
+            nearestNoteFrequency = frequency;
+            nearestNote = note;
+        }
+    }
+    return nearestNote + '(' + nearestNoteFrequency.toFixed(2) + ')';
 }
 
 function App() {
     let [selectedNotes, setSelectedNotes] = useState([]);
 
-    let notesMap = noteFrequencyMap(440);
+
 
     return (
         <>
