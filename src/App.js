@@ -21,11 +21,20 @@ function findNearestNoteFrequency(noteFrequency, notesMap) {
     return nearestNote + '(' + nearestNoteFrequency.toFixed(2) + ')';
 }
 
+//TODO spectograma
+//TODO colorir as notas da série harmonica de acordo com quão desafinadas estão
+//TODO player com volume control
+//TODO volume de overtones
+//TODO presets de instrumentos
+//TODO instruções e créditos (TET12, 440Hz, OHR, de onde peguei presets de instrumentos, etc)
+//TODO react select
+//TODO refactor: extrair funções
+
 function App() {
     let [selectedNotes, setSelectedNotes] = useState([]);
 
     let harmonicMatrix = [];
-    selectedNotes.map((note) => {
+    selectedNotes.forEach((note) => {
         let noteFrequency = notesMap[note];
         let harmonicRow = [];
         for (let i = 1; i <= 8; i++) {
@@ -75,6 +84,8 @@ function App() {
                         })}
                         </tbody>
                     </table>
+                    <h1>Chart</h1>
+
                 </div>
             </div>
         </>
