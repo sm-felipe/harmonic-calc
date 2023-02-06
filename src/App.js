@@ -6,8 +6,7 @@ let notesMap = noteFrequencyMap(440);
 function calculateHarmonic(noteFrequency, harmonicNumber) {
     let number = noteFrequency * (harmonicNumber + 1);
     if(number > 22000 || number < 20) return 'OHR';
-    let nearestNote = findNearestNoteFrequency(number, notesMap);
-    return number.toFixed(2) + ' ' + nearestNote
+    return number;
 }
 
 function findNearestNoteFrequency(noteFrequency, notesMap) {
@@ -25,7 +24,16 @@ function findNearestNoteFrequency(noteFrequency, notesMap) {
 function App() {
     let [selectedNotes, setSelectedNotes] = useState([]);
 
-
+    let harmonicMatrix = [];
+    selectedNotes.map((note) => {
+        let noteFrequency = notesMap[note];
+        let harmonicRow = [];
+        for (let i = 1; i <= 8; i++) {
+            let harmonic = calculateHarmonic(noteFrequency, i);
+            harmonicRow.push(harmonic);
+        }
+        harmonicMatrix.push(harmonicRow);
+    });
 
     return (
         <>
@@ -58,23 +66,13 @@ function App() {
                         </tr>
                         </thead>
                         <tbody>
-                        {selectedNotes.map((note) => {
-                                return <tr key={note}>
-                                    <td>{notesMap[note] >= 20 ?
-                                        note + '(' + notesMap[note].toFixed(2) + ')'
-                                        : 'OHR' + '(' + notesMap[note].toFixed(2) + ')'
-                                    }</td>
-                                    <td>{calculateHarmonic(notesMap[note], 1)}</td>
-                                    <td>{calculateHarmonic(notesMap[note], 2)}</td>
-                                    <td>{calculateHarmonic(notesMap[note], 3)}</td>
-                                    <td>{calculateHarmonic(notesMap[note], 4)}</td>
-                                    <td>{calculateHarmonic(notesMap[note], 5)}</td>
-                                    <td>{calculateHarmonic(notesMap[note], 6)}</td>
-                                    <td>{calculateHarmonic(notesMap[note], 7)}</td>
-                                    <td>{calculateHarmonic(notesMap[note], 8)}</td>
-                                </tr>
-                            }
-                        )}
+                        {harmonicMatrix.map((harmonicRow) => {
+                            return <tr key={harmonicRow}>
+                                {harmonicRow.map((harmonic) => {
+                                    return <td key={harmonic}>{harmonic.toFixed(2) + ' ' + findNearestNoteFrequency(harmonic, notesMap)}</td>
+                                })}
+                            </tr>
+                        })}
                         </tbody>
                     </table>
                 </div>
