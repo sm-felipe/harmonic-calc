@@ -1,38 +1,63 @@
-import {CartesianGrid, Cell, Scatter, ScatterChart, Tooltip, XAxis, YAxis} from "recharts";
+import {Bar, BarChart, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import React from "react";
 
 const data = [
-    { x: 100, y: 200, z: 200 },
-    { x: 120, y: 100, z: 260 },
-    { x: 170, y: 300, z: 400 },
-    { x: 140, y: 250, z: 280 },
-    { x: 150, y: 400, z: 500 },
-    { x: 110, y: 280, z: 200 },
+    {
+        frequency: 16,
+        uv: 1,
+    },
+    {
+        frequency: 32,
+        uv: 1,
+        pv: 1,
+    },
+    {
+        frequency: 49,
+        uv: 1,
+    },
+    {
+        frequency: 65,
+        uv: 1,
+        pv: 1,
+    },
+    {
+        frequency: 81,
+        uv: 1,
+        pv: 1,
+    },
+    {
+        frequency: 98,
+        pv: 1,
+    },
+    {
+        frequency: 114,
+        uv: 1,
+        pv: 1,
+    }
 ];
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', 'red', 'pink'];
-
 
 export function Spectogram({harmonicMatrix}) {
     return (
-        <ScatterChart
-            width={400}
-            height={400}
-            margin={{
-                top: 20,
-                right: 20,
-                bottom: 20,
-                left: 20,
-            }}
-        >
-            <CartesianGrid />
-            <XAxis type="number" dataKey="x" name="stature" unit="cm" />
-            <YAxis type="number" dataKey="y" name="weight" unit="kg" />
-            <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-            <Scatter name="A school" data={data} fill="#8884d8">
-                {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-            </Scatter>
-        </ScatterChart>
+        <ResponsiveContainer width="100%" height={400}>
+            <BarChart
+                width={500}
+                height={300}
+                data={data}
+                margin={{
+                    top: 20,
+                    right: 30,
+                    left: 20,
+                    bottom: 5
+                }}
+            >
+                {/*<CartesianGrid strokeDasharray="3 3" />*/}
+                <XAxis dataKey="frequency" type="number"  />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="pv" stackId="a" fill="#8884d8" />
+                <Bar dataKey="uv" stackId="a" fill="#82ca9d" />
+            </BarChart>
+        </ResponsiveContainer>
     );
 }

@@ -19,7 +19,7 @@ export default function HarmonicTable({harmonicMatrix}) {
             <tbody>
             {harmonicMatrix.map((harmonicRow) => {
                 return <tr key={harmonicRow}>
-                    {harmonicRow.map((frequency) => {
+                    {harmonicRow.harmonics.map((frequency) => {
                         let harmonic = frequency.frequency;
                         return <td
                             key={harmonic}>

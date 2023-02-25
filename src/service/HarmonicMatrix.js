@@ -1,5 +1,28 @@
 import {notesMap} from "../App";
 
+export function calculateHarmonicMatrix(selectedNotes) {
+    let harmonicMatrix = [];
+    selectedNotes.forEach((note) => {
+        let harmonicRow = new HarmonicRow(note);
+        harmonicMatrix.push(harmonicRow);
+    });
+    return harmonicMatrix;
+}
+
+class HarmonicRow {
+    note;
+    harmonics = [];
+
+    constructor(note) {
+        this.note = note;
+        this.harmonics.push(new Frequency(notesMap[note]));
+        for (let i = 1; i <= 8; i++) {
+            let harmonic = calculateHarmonic(notesMap[note], i);
+            this.harmonics.push(new Frequency(harmonic));
+        }
+    }
+}
+
 class Frequency {
     frequency;
     nearestNoteTxt;
@@ -9,21 +32,6 @@ class Frequency {
         this.frequency = frequency;
         this.nearestNoteTxt = findNearestNoteFrequency(frequency);
     }
-}
-
-export function calculateHarmonicMatrix(selectedNotes) {
-    let harmonicMatrix = [];
-    selectedNotes.forEach((note) => {
-        let baseNoteFrequency = notesMap[note];
-        let harmonicRow = [];
-        harmonicRow.push(new Frequency(baseNoteFrequency));
-        for (let i = 1; i <= 8; i++) {
-            let harmonic = calculateHarmonic(baseNoteFrequency, i);
-            harmonicRow.push(new Frequency(harmonic));
-        }
-        harmonicMatrix.push(harmonicRow);
-    });
-    return harmonicMatrix;
 }
 
 function calculateHarmonic(noteFrequency, harmonicNumber) {
