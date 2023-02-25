@@ -3,6 +3,7 @@ import noteFrequencyMap from './service/notes';
 import {useState} from "react";
 import HarmonicTable from "./components/HarmonicTable";
 import {calculateHarmonicMatrix} from "./service/HarmonicMatrix";
+import {Spectogram} from "./components/Spectogram";
 
 export let notesMap = noteFrequencyMap(440);
 
@@ -37,6 +38,7 @@ function App() {
                 </div>
                 <div className={'flex-child'}>
                     <HarmonicTable harmonicMatrix={harmonicMatrix} />
+                    <Spectogram />
                 </div>
             </div>
         </>
