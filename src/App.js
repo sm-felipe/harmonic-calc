@@ -4,7 +4,7 @@ import {useState} from "react";
 import HarmonicTable from "./components/HarmonicTable";
 import {calculateHarmonicMatrix} from "./service/HarmonicMatrix";
 
-let notesMap = noteFrequencyMap(440);
+export let notesMap = noteFrequencyMap(440);
 
 
 
@@ -19,7 +19,7 @@ let notesMap = noteFrequencyMap(440);
 
 function App() {
     let [selectedNotes, setSelectedNotes] = useState([]);
-    let harmonicMatrix = calculateHarmonicMatrix(selectedNotes, notesMap);
+    let harmonicMatrix = calculateHarmonicMatrix(selectedNotes);
 
     return (
         <>
@@ -36,7 +36,7 @@ function App() {
                     </select>
                 </div>
                 <div className={'flex-child'}>
-                    <HarmonicTable harmonicMatrix={harmonicMatrix} notesMap={notesMap}/>
+                    <HarmonicTable harmonicMatrix={harmonicMatrix} />
                 </div>
             </div>
         </>

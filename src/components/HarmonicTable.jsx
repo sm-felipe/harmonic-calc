@@ -1,4 +1,4 @@
-export default function HarmonicTable({harmonicMatrix, notesMap}) {
+export default function HarmonicTable({harmonicMatrix}) {
     return <>
 
         <h1>Selected Notes</h1>
@@ -25,7 +25,7 @@ export default function HarmonicTable({harmonicMatrix, notesMap}) {
                             key={harmonic}>
                             {(harmonic > 22000 ? '(OHR) ' : harmonic.toFixed(2))
                                 + (harmonic < 20 ? '(OHR) ' : ' ')
-                                + findNearestNoteFrequency(harmonic, notesMap)}
+                                + frequency.nearestNoteTxt}
                         </td>
                     })}
                 </tr>
@@ -35,14 +35,3 @@ export default function HarmonicTable({harmonicMatrix, notesMap}) {
     </>;
 }
 
-function findNearestNoteFrequency(noteFrequency, notesMap) {
-    let nearestNoteFrequency = 0;
-    let nearestNote = '';
-    for (let [note, frequency] of Object.entries(notesMap)) {
-        if (Math.abs(noteFrequency - frequency) < Math.abs(noteFrequency - nearestNoteFrequency)) {
-            nearestNoteFrequency = frequency;
-            nearestNote = note;
-        }
-    }
-    return nearestNote + '(' + nearestNoteFrequency.toFixed(2) + ')';
-}
