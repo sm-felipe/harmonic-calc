@@ -9,7 +9,7 @@ export let notesMap = noteFrequencyMap(440);
 
 
 
-//TODO spectograma
+//TODO volume de acordo com proximidade
 //TODO colorir as notas da série harmonica de acordo com quão desafinadas estão
 //TODO player com volume control
 //TODO volume de overtones
