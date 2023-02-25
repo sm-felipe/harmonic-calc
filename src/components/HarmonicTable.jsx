@@ -19,7 +19,8 @@ export default function HarmonicTable({harmonicMatrix, notesMap}) {
             <tbody>
             {harmonicMatrix.map((harmonicRow) => {
                 return <tr key={harmonicRow}>
-                    {harmonicRow.map((harmonic) => {
+                    {harmonicRow.map((frequency) => {
+                        let harmonic = frequency.frequency;
                         return <td
                             key={harmonic}>
                             {(harmonic > 22000 ? '(OHR) ' : harmonic.toFixed(2))
