@@ -17,8 +17,8 @@ export default function HarmonicTable({harmonicMatrix}) {
             </tr>
             </thead>
             <tbody>
-            {harmonicMatrix.map((harmonicRow) => {
-                return <tr key={harmonicRow}>
+            {harmonicMatrix.map((harmonicRow, index) => {
+                return <tr key={harmonicRow + index}>
                     {harmonicRow.harmonics.map((frequency) => {
                         let harmonic = frequency.frequency;
                         return <td

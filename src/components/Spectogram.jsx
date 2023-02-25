@@ -1,48 +1,17 @@
-import {Bar, BarChart, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
+import {Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import React from "react";
 
-const data = [
-    {
-        frequency: 16,
-        uv: 1,
-    },
-    {
-        frequency: 32,
-        uv: 1,
-        pv: 1,
-    },
-    {
-        frequency: 49,
-        uv: 1,
-    },
-    {
-        frequency: 65,
-        uv: 1,
-        pv: 1,
-    },
-    {
-        frequency: 81,
-        uv: 1,
-        pv: 1,
-    },
-    {
-        frequency: 98,
-        pv: 1,
-    },
-    {
-        frequency: 114,
-        uv: 1,
-        pv: 1,
-    }
-];
-
 export function Spectogram({harmonicMatrix}) {
+    let convertedMatrix = convertToChartData(harmonicMatrix);
+
+    console.log(convertedMatrix);
+
     return (
         <ResponsiveContainer width="100%" height={400}>
             <BarChart
                 width={500}
                 height={300}
-                data={data}
+                data={convertedMatrix}
                 margin={{
                     top: 20,
                     right: 30,
@@ -50,14 +19,55 @@ export function Spectogram({harmonicMatrix}) {
                     bottom: 5
                 }}
             >
-                {/*<CartesianGrid strokeDasharray="3 3" />*/}
-                <XAxis dataKey="frequency" type="number"  />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="pv" stackId="a" fill="#8884d8" />
-                <Bar dataKey="uv" stackId="a" fill="#82ca9d" />
+                <CartesianGrid strokeDasharray="3 3"/>
+                <XAxis dataKey="frequency" type="number"/>
+                <YAxis/>
+                <Tooltip/>
+                <Legend/>
+                {harmonicMatrix.map((harmonicRow) => {
+                    return <Bar dataKey={harmonicRow.note} stackId="a" fill={randomColor()}/>
+                    }
+                )}
             </BarChart>
         </ResponsiveContainer>
     );
+}
+
+function convertToChartData(harmonicMatrix) {
+    let convertedMatrix = [];
+
+    for (let harmonicRow of harmonicMatrix) {
+        addNoteHarmonics(harmonicRow, convertedMatrix);
+    }
+
+    return convertedMatrix;
+}
+
+function addNoteHarmonics(harmonicRow, convertedMatrix) {
+    let rootNoteName = harmonicRow.note;
+
+    for (let frequencyInstance of harmonicRow.harmonics) {
+
+        let foundFrequency = findFrequencyInData(convertedMatrix, frequencyInstance);
+
+        if (foundFrequency) {//adding new root nome attribute to existing frequency
+            foundFrequency[rootNoteName] = frequencyInstance.volume;
+
+        } else {//creating new frequency
+            let newFrequency = {
+                frequency: frequencyInstance.frequency,
+                [rootNoteName]: frequencyInstance.volume
+            };
+            convertedMatrix.push(newFrequency);
+
+        }
+    }
+}
+
+function findFrequencyInData(diffData, frequencyInstance) {
+    return diffData.find((elem) => elem.frequency == frequencyInstance.frequency);
+}
+
+function randomColor() {
+    return '#' + (Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0');
 }
