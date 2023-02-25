@@ -8,7 +8,7 @@ import {
     ScatterChart,
     Tooltip,
     XAxis,
-    YAxis, ZAxis
+    YAxis
 } from "recharts";
 import React from "react";
 import {convertToChartData} from "./BarChartFuncs";
@@ -16,21 +16,33 @@ import {convertToChartData} from "./BarChartFuncs";
 function convertToScartData(harmonicMatrix) {
     const datas = [];
 
-    let ammount = 0;
+    const volumeAccumulator = new Map();
+
+    function getOrSetVolume(frequencyNumber, volumeAccumulator) {
+        if(volumeAccumulator.has(frequencyNumber)) {
+            return volumeAccumulator.get(frequencyNumber);
+        }
+        volumeAccumulator.set(frequencyNumber, 0);
+        return 0;
+    }
+
     for (let harmonicRow of harmonicMatrix) {
         const data = [];
 
         let rootNoteName = harmonicRow.note;
 
         for(let frequencyInstance of harmonicRow.harmonics) {
+            let frequencyNumber = frequencyInstance.frequency;
+            let accumulatedVolume = getOrSetVolume(frequencyNumber, volumeAccumulator);
             let point = {
-                frequency : frequencyInstance.frequency,
-                volume : frequencyInstance.volume + ammount,
+                frequency : frequencyNumber,
+                volume : frequencyInstance.volume + accumulatedVolume,
             }
+
+            volumeAccumulator.set(frequencyNumber, volumeAccumulator.get(frequencyNumber) + frequencyInstance.volume);
             data.push(point);
         }
         datas.push(data);
-        ammount += 0.2;
     }
 
     return datas;
