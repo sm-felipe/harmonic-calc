@@ -24,8 +24,8 @@ function App() {
 
     return (
         <>
-            <div className={'flex-container'} style={{maxWidth: '80px'}}>
-                <div className={'flex-child'}>
+            <div className={'flex-container'}>
+                <div className={'flex-child'} style={{maxWidth: '40px'}}>
                     <select multiple={true}
                             onChange={selectNotes()}
                             style={{height: '90vh', width: '40px'}}>

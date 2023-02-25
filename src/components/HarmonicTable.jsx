@@ -1,5 +1,5 @@
 export default function HarmonicTable({harmonicMatrix}) {
-    return <>
+    return <div style={{maxWidth: '80px'}}>
 
         <h1>Selected Notes</h1>
         <table border={1}>
@@ -32,6 +32,6 @@ export default function HarmonicTable({harmonicMatrix}) {
             })}
             </tbody>
         </table>
-    </>;
+    </div>;
 }
 
