@@ -8,7 +8,7 @@ import {
     ScatterChart,
     Tooltip,
     XAxis,
-    YAxis
+    YAxis, ZAxis
 } from "recharts";
 import React from "react";
 import {convertToChartData} from "./BarChartFuncs";
@@ -16,6 +16,7 @@ import {convertToChartData} from "./BarChartFuncs";
 function convertToScartData(harmonicMatrix) {
     const datas = [];
 
+    let ammount = 0;
     for (let harmonicRow of harmonicMatrix) {
         const data = [];
 
@@ -24,11 +25,12 @@ function convertToScartData(harmonicMatrix) {
         for(let frequencyInstance of harmonicRow.harmonics) {
             let point = {
                 frequency : frequencyInstance.frequency,
-                volume : frequencyInstance.volume
+                volume : frequencyInstance.volume + ammount,
             }
             data.push(point);
         }
         datas.push(data);
+        ammount += 0.2;
     }
 
     return datas;
@@ -60,7 +62,7 @@ export function Spectogram({harmonicMatrix}) {
                     <Tooltip/>
                     <Legend/>
                     {harmonicMatrix.map((harmonicRow) => {
-                            return <Bar dataKey={harmonicRow.note} stackId="a" fill={randomColor()}/>
+                            return <Bar key={harmonicRow.note} dataKey={harmonicRow.note} stackId="a" fill={randomColor()}/>
                         }
                     )}
                 </BarChart>
@@ -78,11 +80,11 @@ export function Spectogram({harmonicMatrix}) {
                 >
                     <CartesianGrid strokeDasharray="3 3"/>
                     <XAxis  type="number" dataKey="frequency" name="frequency" unit="hz"/>
-                    <YAxis type="number" dataKey="volume" name="volume"  />
+                    <YAxis type="number" dataKey="volume" name="volume"  unit="db"/>
                     <Tooltip cursor={{ strokeDasharray: '3 3' }} />
                     <Legend/>
                     {scatterData.map((harmonicRow) => {
-                            return <Scatter key={harmonicRow} data={harmonicRow}  fill={randomColor()}/>
+                            return <Scatter data={harmonicRow}  fill={randomColor()}/>
                         }
                     )}
                 </ScatterChart>
