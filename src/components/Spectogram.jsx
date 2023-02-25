@@ -19,7 +19,7 @@ function convertToScartData(harmonicMatrix) {
     const volumeAccumulator = new Map();
 
     function getOrSetVolume(frequencyNumber, volumeAccumulator) {
-        if(volumeAccumulator.has(frequencyNumber)) {
+        if (volumeAccumulator.has(frequencyNumber)) {
             return volumeAccumulator.get(frequencyNumber);
         }
         volumeAccumulator.set(frequencyNumber, 0);
@@ -31,12 +31,12 @@ function convertToScartData(harmonicMatrix) {
 
         let rootNoteName = harmonicRow.note;
 
-        for(let frequencyInstance of harmonicRow.harmonics) {
+        for (let frequencyInstance of harmonicRow.harmonics) {
             let frequencyNumber = frequencyInstance.frequency;
             let accumulatedVolume = getOrSetVolume(frequencyNumber, volumeAccumulator);
             let point = {
-                frequency : frequencyNumber,
-                volume : frequencyInstance.volume + accumulatedVolume,
+                frequency: frequencyNumber,
+                volume: frequencyInstance.volume + accumulatedVolume,
             }
 
             volumeAccumulator.set(frequencyNumber, volumeAccumulator.get(frequencyNumber) + frequencyInstance.volume);
@@ -56,6 +56,28 @@ export function Spectogram({harmonicMatrix}) {
 
     return (
         <>
+            <ResponsiveContainer width="100%" height={400}>
+                <ScatterChart
+                    width={500}
+                    height={300}
+                    margin={{
+                        top: 20,
+                        right: 30,
+                        left: 20,
+                        bottom: 5
+                    }}
+                >
+                    <CartesianGrid strokeDasharray="3 3"/>
+                    <XAxis type="number" dataKey="frequency" name="frequency" unit="hz"/>
+                    <YAxis type="number" dataKey="volume" name="volume" unit="db"/>
+                    <Tooltip cursor={{strokeDasharray: '3 3'}}/>
+                    <Legend/>
+                    {scatterData.map((harmonicRow) => {
+                            return <Scatter data={harmonicRow} line fill={randomColor()}/>
+                        }
+                    )}
+                </ScatterChart>
+            </ResponsiveContainer>
             <ResponsiveContainer width="100%" height={400}>
                 <BarChart
                     width={500}
@@ -79,28 +101,7 @@ export function Spectogram({harmonicMatrix}) {
                     )}
                 </BarChart>
             </ResponsiveContainer>
-            <ResponsiveContainer width="100%" height={400}>
-                <ScatterChart
-                    width={500}
-                    height={300}
-                    margin={{
-                        top: 20,
-                        right: 30,
-                        left: 20,
-                        bottom: 5
-                    }}
-                >
-                    <CartesianGrid strokeDasharray="3 3"/>
-                    <XAxis  type="number" dataKey="frequency" name="frequency" unit="hz"/>
-                    <YAxis type="number" dataKey="volume" name="volume"  unit="db"/>
-                    <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-                    <Legend/>
-                    {scatterData.map((harmonicRow) => {
-                            return <Scatter data={harmonicRow} line  fill={randomColor()}/>
-                        }
-                    )}
-                </ScatterChart>
-            </ResponsiveContainer>
+
         </>
 
     );
