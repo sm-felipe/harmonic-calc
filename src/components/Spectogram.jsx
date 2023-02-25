@@ -96,7 +96,7 @@ export function Spectogram({harmonicMatrix}) {
                     <Tooltip cursor={{ strokeDasharray: '3 3' }} />
                     <Legend/>
                     {scatterData.map((harmonicRow) => {
-                            return <Scatter data={harmonicRow}  fill={randomColor()}/>
+                            return <Scatter data={harmonicRow} line  fill={randomColor()}/>
                         }
                     )}
                 </ScatterChart>
