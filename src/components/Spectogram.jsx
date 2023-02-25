@@ -35,6 +35,7 @@ function convertToScartData(harmonicMatrix) {
             let frequencyNumber = frequencyInstance.frequency;
             let accumulatedVolume = getOrSetVolume(frequencyNumber, volumeAccumulator);
             let point = {
+                rootNoteName,
                 frequency: frequencyNumber,
                 volume: frequencyInstance.volume + accumulatedVolume,
             }
@@ -73,7 +74,7 @@ export function Spectogram({harmonicMatrix}) {
                     <Tooltip cursor={{strokeDasharray: '3 3'}}/>
                     <Legend/>
                     {scatterData.map((harmonicRow) => {
-                            return <Scatter data={harmonicRow} line fill={randomColor()}/>
+                            return <Scatter key={harmonicRow[0].rootNoteName} name={harmonicRow[0].rootNoteName} data={harmonicRow} line fill={randomColor()}/>
                         }
                     )}
                 </ScatterChart>
