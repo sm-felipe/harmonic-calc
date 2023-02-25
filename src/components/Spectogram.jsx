@@ -1,9 +1,44 @@
-import {Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Legend,
+    ResponsiveContainer,
+    Scatter,
+    ScatterChart,
+    Tooltip,
+    XAxis,
+    YAxis
+} from "recharts";
 import React from "react";
 import {convertToChartData} from "./BarChartFuncs";
 
+function convertToScartData(harmonicMatrix) {
+    const datas = [];
+
+    for (let harmonicRow of harmonicMatrix) {
+        const data = [];
+
+        let rootNoteName = harmonicRow.note;
+
+        for(let frequencyInstance of harmonicRow.harmonics) {
+            let point = {
+                frequency : frequencyInstance.frequency,
+                volume : frequencyInstance.volume
+            }
+            data.push(point);
+        }
+        datas.push(data);
+    }
+
+    return datas;
+}
+
 export function Spectogram({harmonicMatrix}) {
     let convertedMatrix = convertToChartData(harmonicMatrix);
+
+    let scatterData = convertToScartData(harmonicMatrix);
+    console.log(scatterData);
 
     return (
         <>
@@ -29,6 +64,28 @@ export function Spectogram({harmonicMatrix}) {
                         }
                     )}
                 </BarChart>
+            </ResponsiveContainer>
+            <ResponsiveContainer width="100%" height={400}>
+                <ScatterChart
+                    width={500}
+                    height={300}
+                    margin={{
+                        top: 20,
+                        right: 30,
+                        left: 20,
+                        bottom: 5
+                    }}
+                >
+                    <CartesianGrid strokeDasharray="3 3"/>
+                    <XAxis  type="number" dataKey="frequency" name="frequency" unit="hz"/>
+                    <YAxis type="number" dataKey="volume" name="volume"  />
+                    <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+                    <Legend/>
+                    {scatterData.map((harmonicRow) => {
+                            return <Scatter key={harmonicRow} data={harmonicRow}  fill={randomColor()}/>
+                        }
+                    )}
+                </ScatterChart>
             </ResponsiveContainer>
         </>
 
