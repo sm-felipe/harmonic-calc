@@ -1,15 +1,11 @@
 import './App.css';
-import noteFrequencyMap from './notes';
+import noteFrequencyMap from './service/notes';
 import {useState} from "react";
-import HarmonicTable from "./HarmonicTable";
+import HarmonicTable from "./components/HarmonicTable";
+import {calculateHarmonicMatrix} from "./service/HarmonicMatrix";
 
 let notesMap = noteFrequencyMap(440);
 
-function calculateHarmonic(noteFrequency, harmonicNumber) {
-    let number = noteFrequency * (harmonicNumber + 1);
-    if (number > 22000 || number < 20) return 'OHR';
-    return number;
-}
 
 
 //TODO spectograma
@@ -23,17 +19,7 @@ function calculateHarmonic(noteFrequency, harmonicNumber) {
 
 function App() {
     let [selectedNotes, setSelectedNotes] = useState([]);
-
-    let harmonicMatrix = [];
-    selectedNotes.forEach((note) => {
-        let noteFrequency = notesMap[note];
-        let harmonicRow = [];
-        for (let i = 1; i <= 9; i++) {
-            let harmonic = calculateHarmonic(noteFrequency, i);
-            harmonicRow.push(harmonic);
-        }
-        harmonicMatrix.push(harmonicRow);
-    });
+    let harmonicMatrix = calculateHarmonicMatrix(selectedNotes, notesMap);
 
     return (
         <>
