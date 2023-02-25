@@ -1,25 +1,16 @@
 import './App.css';
 import noteFrequencyMap from './notes';
 import {useState} from "react";
+import HarmonicTable from "./HarmonicTable";
 
 let notesMap = noteFrequencyMap(440);
+
 function calculateHarmonic(noteFrequency, harmonicNumber) {
     let number = noteFrequency * (harmonicNumber + 1);
-    if(number > 22000 || number < 20) return 'OHR';
+    if (number > 22000 || number < 20) return 'OHR';
     return number;
 }
 
-function findNearestNoteFrequency(noteFrequency, notesMap) {
-    let nearestNoteFrequency = 0;
-    let nearestNote = '';
-    for (let [note, frequency] of Object.entries(notesMap)) {
-        if (Math.abs(noteFrequency - frequency) < Math.abs(noteFrequency - nearestNoteFrequency)) {
-            nearestNoteFrequency = frequency;
-            nearestNote = note;
-        }
-    }
-    return nearestNote + '(' + nearestNoteFrequency.toFixed(2) + ')';
-}
 
 //TODO spectograma
 //TODO colorir as notas da série harmonica de acordo com quão desafinadas estão
@@ -37,7 +28,7 @@ function App() {
     selectedNotes.forEach((note) => {
         let noteFrequency = notesMap[note];
         let harmonicRow = [];
-        for (let i = 1; i <= 8; i++) {
+        for (let i = 1; i <= 9; i++) {
             let harmonic = calculateHarmonic(noteFrequency, i);
             harmonicRow.push(harmonic);
         }
@@ -59,33 +50,7 @@ function App() {
                     </select>
                 </div>
                 <div className={'flex-child'}>
-                    <h1>Selected Notes</h1>
-                    <table border={1}>
-                        <thead>
-                        <tr>
-                            <th>Note</th>
-                            <th>1st harm</th>
-                            <th>2nd harm</th>
-                            <th>3rd harm</th>
-                            <th>4th harm</th>
-                            <th>5th harm</th>
-                            <th>6th harm</th>
-                            <th>7th harm</th>
-                            <th>8th harm</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {harmonicMatrix.map((harmonicRow) => {
-                            return <tr key={harmonicRow}>
-                                {harmonicRow.map((harmonic) => {
-                                    return <td key={harmonic}>{harmonic.toFixed(2) + ' ' + findNearestNoteFrequency(harmonic, notesMap)}</td>
-                                })}
-                            </tr>
-                        })}
-                        </tbody>
-                    </table>
-                    <h1>Chart</h1>
-
+                    <HarmonicTable harmonicMatrix={harmonicMatrix} notesMap={notesMap}/>
                 </div>
             </div>
         </>
