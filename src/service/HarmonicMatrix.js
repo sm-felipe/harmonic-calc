@@ -3,6 +3,7 @@ import {notesMap} from "../App";
 class Frequency {
     frequency;
     nearestNoteTxt;
+    volume = 0.5;
 
     constructor(frequency) {
         this.frequency = frequency;
