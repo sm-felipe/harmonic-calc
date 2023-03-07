@@ -4,6 +4,21 @@ export function Spectogram2({harmonicMatrix}) {
     //each line is a series
     let convertedMatrix = convertToPlotData(harmonicMatrix);
 
+    let seriesElems =[];
+    convertedMatrix.forEach((harmonicRow, index) => {
+        seriesElems.push(<ScatterSeries key={index}
+                                   data={harmonicRow}
+                                   label={harmonicMatrix[index].note}
+                                   markerStyle={{
+                                       fill: '#4287f5',
+                                   }}
+        />)
+        seriesElems.push(<BarSeries key={index}
+                               data={harmonicRow}
+                               label={harmonicMatrix[index].note}
+        />)
+    });
+
 
     return <Plot width={900} height={300} margin={{
         left: 40,
@@ -11,18 +26,7 @@ export function Spectogram2({harmonicMatrix}) {
         top: 40,
         bottom: 40
     }}>
-        {convertedMatrix.map((series, index) =>
-            <ScatterSeries key={index}
-                           data={series}
-                           label={harmonicMatrix[index].note}
-            />)
-        }
-        {convertedMatrix.map((series, index) =>
-            <BarSeries key={index}
-                           data={series}
-                           label={harmonicMatrix[index].note}
-            />)
-        }
+        {seriesElems}
     </Plot>
 }
 
