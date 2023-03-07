@@ -2,7 +2,6 @@ import './App.css';
 import noteFrequencyMap from './service/notes';
 import {useState} from "react";
 import HarmonicTable from "./components/HarmonicTable";
-import {Spectogram} from "./components/Spectogram";
 import {calculateHarmonicMatrix} from "./service/HarmonicMatrix";
 import {Spectogram2} from "./components/Spectogram2";
 
@@ -10,14 +9,15 @@ export let notesMap = noteFrequencyMap(440);
 
 
 
-//TODO volume de acordo com proximidade
+//TODO plot das ondas
+//TODO error bars https://react-plot.zakodium.com/series/barSeries#3-errorbars
 //TODO colorir as notas da série harmonica de acordo com quão desafinadas estão
 //TODO player com volume control
 //TODO volume de overtones
-//TODO presets de instrumentos
+//TODO presets de instrumentos controlando os volumes dos harmonicos
 //TODO instruções e créditos (TET12, 440Hz, OHR, de onde peguei presets de instrumentos, etc)
-//TODO react select
-//TODO refactor: extrair funções
+//TODO react select (ou outra lib visual) para escolher componentes
+//TODO refactor: organizar classes e functions
 
 function App() {
     let [selectedNotes, setSelectedNotes] = useState([]);
