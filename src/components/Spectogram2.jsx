@@ -14,7 +14,10 @@ export function Spectogram2({harmonicMatrix}) {
                                             fill: fill,
                                             stroke: fill,
                                         }}
-                                        pointLabel={({nearestNote }) => nearestNote}
+                                        pointLabel={({nearestNote}) => nearestNote}
+                                        pointLabelStyle={({isNoteInTune}) => ({
+                                            color: isNoteInTune ? 'green' : 'red',
+                                        })}
         />)
         seriesElems.push(<BarSeries key={index + 'bar'}
                                     data={harmonicRow}
@@ -42,7 +45,8 @@ function convertToPlotData(harmonicMatrix) {
             let point = {
                 x: frequencyInstance.frequency,
                 y: frequencyInstance.volume - (i * 0.01),
-                nearestNote : frequencyInstance.nearestNote
+                nearestNote: frequencyInstance.nearestNote,
+                isNoteInTune: frequencyInstance.frequency - frequencyInstance.nearestNoteFrequency < 0.001
             }
             convertedRow.push(point);
         }
