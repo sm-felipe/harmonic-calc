@@ -4,18 +4,20 @@ export function Spectogram2({harmonicMatrix}) {
     //each line is a series
     let convertedMatrix = convertToPlotData(harmonicMatrix);
 
-    let seriesElems =[];
+    let seriesElems = [];
     convertedMatrix.forEach((harmonicRow, index) => {
+        let fill = randomColor();
         seriesElems.push(<ScatterSeries key={index}
-                                   data={harmonicRow}
-                                   label={harmonicMatrix[index].note}
-                                   markerStyle={{
-                                       fill: '#4287f5',
-                                   }}
+                                        data={harmonicRow}
+                                        label={harmonicMatrix[index].note}
+                                        markerStyle={{
+                                            fill: fill,
+                                            stroke: fill,
+                                        }}
         />)
         seriesElems.push(<BarSeries key={index}
-                               data={harmonicRow}
-                               label={harmonicMatrix[index].note}
+                                    data={harmonicRow}
+                                    label={harmonicMatrix[index].note}
         />)
     });
 
@@ -46,4 +48,8 @@ function convertToPlotData(harmonicMatrix) {
     }
 
     return converted;
+}
+
+function randomColor() {
+    return '#' + (Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0');
 }
