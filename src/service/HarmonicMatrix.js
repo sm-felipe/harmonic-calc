@@ -25,12 +25,15 @@ class HarmonicRow {
 
 class Frequency {
     frequency;
-    nearestNoteTxt;
+    nearestNote = '';
+    nearestNoteFrequency;
     volume = 0.5;
 
     constructor(frequency) {
         this.frequency = frequency;
-        this.nearestNoteTxt = findNearestNoteFrequency(frequency);
+        let nearestNote = findNearestNote(frequency);
+        this.nearestNote = nearestNote.note;
+        this.nearestNoteFrequency = nearestNote.nearestNoteFrequency;
     }
 }
 
@@ -38,7 +41,7 @@ function calculateHarmonic(noteFrequency, harmonicNumber) {
     return noteFrequency * (harmonicNumber + 1);
 }
 
-function findNearestNoteFrequency(noteFrequency) {
+function findNearestNote(noteFrequency) {
     let nearestNoteFrequency = 0;
     let nearestNote = '';
     for (let [note, frequency] of Object.entries(notesMap)) {
@@ -47,5 +50,8 @@ function findNearestNoteFrequency(noteFrequency) {
             nearestNote = note;
         }
     }
-    return nearestNote + '(' + nearestNoteFrequency.toFixed(2) + ')';
+    return {
+        note: nearestNote,
+        nearestNoteFrequency: nearestNoteFrequency
+    };
 }

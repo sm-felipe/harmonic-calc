@@ -7,15 +7,16 @@ export function Spectogram2({harmonicMatrix}) {
     let seriesElems = [];
     convertedMatrix.forEach((harmonicRow, index) => {
         let fill = randomColor();
-        seriesElems.push(<ScatterSeries key={index}
+        seriesElems.push(<ScatterSeries key={index + 'scatter'}
                                         data={harmonicRow}
                                         label={harmonicMatrix[index].note}
                                         markerStyle={{
                                             fill: fill,
                                             stroke: fill,
                                         }}
+                                        pointLabel={({nearestNote }) => nearestNote}
         />)
-        seriesElems.push(<BarSeries key={index}
+        seriesElems.push(<BarSeries key={index + 'bar'}
                                     data={harmonicRow}
                                     label={harmonicMatrix[index].note}
         />)
@@ -40,7 +41,8 @@ function convertToPlotData(harmonicMatrix) {
             let frequencyInstance = harmonicRow.harmonics[i];
             let point = {
                 x: frequencyInstance.frequency,
-                y: frequencyInstance.volume - (i * 0.01)
+                y: frequencyInstance.volume - (i * 0.01),
+                nearestNote : frequencyInstance.nearestNote
             }
             convertedRow.push(point);
         }

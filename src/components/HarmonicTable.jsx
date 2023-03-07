@@ -25,7 +25,7 @@ export default function HarmonicTable({harmonicMatrix}) {
                             key={harmonic}>
                             {(harmonic > 22000 ? '(OHR) ' : harmonic.toFixed(2))
                                 + (harmonic < 20 ? '(OHR) ' : ' ')
-                                + frequency.nearestNoteTxt}
+                                + frequency.nearestNote + '(' + frequency.nearestNoteFrequency.toFixed(2) + ')'}
                         </td>
                     })}
                 </tr>
