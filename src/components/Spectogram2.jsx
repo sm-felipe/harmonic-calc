@@ -1,4 +1,4 @@
-import {BarSeries, Plot} from "react-plot";
+import {Axis, BarSeries, Plot} from "react-plot";
 
 export function Spectogram2({harmonicMatrix}) {
     //each line is a series
@@ -25,6 +25,9 @@ export function Spectogram2({harmonicMatrix}) {
         bottom: 40
     }}>
         {seriesElems}
+        <Axis position="left" label="Decibels" paddingStart={0.01} paddingEnd={0.01}/>
+        <Axis position="bottom" label="Frequency" paddingStart={20}
+              paddingEnd={50}/>{/*    TODO configurable padding */}
     </Plot>
 }
 
