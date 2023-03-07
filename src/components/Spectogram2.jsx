@@ -1,4 +1,4 @@
-import {Axis, BarSeries, LineSeries, Plot, ScatterSeries} from "react-plot";
+import {BarSeries, Plot} from "react-plot";
 
 export function Spectogram2({harmonicMatrix}) {
     //each line is a series
@@ -6,22 +6,14 @@ export function Spectogram2({harmonicMatrix}) {
 
     let seriesElems = [];
     convertedMatrix.forEach((harmonicRow, index) => {
-        let fill = randomColor();
-        seriesElems.push(<ScatterSeries key={index + 'scatter'}
-                                        data={harmonicRow}
-                                        label={harmonicMatrix[index].note}
-                                        markerStyle={{
-                                            fill: fill,
-                                            stroke: fill,
-                                        }}
-                                        pointLabel={({nearestNote}) => nearestNote}
-                                        pointLabelStyle={({isNoteInTune}) => ({
-                                            color: isNoteInTune ? 'green' : 'red',
-                                        })}
-        />)
         seriesElems.push(<BarSeries key={index + 'bar'}
                                     data={harmonicRow}
+                                    displayMarkers={true}
                                     label={harmonicMatrix[index].note}
+                                    pointLabel={({nearestNote}) => nearestNote}
+                                    pointLabelStyle={{
+                                        fill: ({isNoteInTune}) => isNoteInTune ? 'green' : 'red',
+                                    }}
         />)
     });
 
