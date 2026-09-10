@@ -4,10 +4,14 @@ import {useState} from "react";
 import HarmonicTable from "./components/HarmonicTable";
 import {calculateHarmonicMatrix} from "./service/HarmonicMatrix";
 import {Spectogram2} from "./components/Spectogram2";
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
+import Stack from '@mui/material/Stack';
+import Box from '@mui/material/Box';
 
 export let notesMap = noteFrequencyMap(440);
 
-
+const noteOptions = Object.keys(notesMap);
 
 //TODO plot das ondas
 //TODO error bars https://react-plot.zakodium.com/series/barSeries#3-errorbars
@@ -16,7 +20,6 @@ export let notesMap = noteFrequencyMap(440);
 //TODO volume de overtones
 //TODO presets de instrumentos controlando os volumes dos harmonicos
 //TODO instruções e créditos (TET12, 440Hz, OHR, de onde peguei presets de instrumentos, etc)
-//TODO react select (ou outra lib visual) para escolher componentes
 //TODO refactor: organizar classes e functions
 
 function App() {
@@ -24,36 +27,36 @@ function App() {
     let harmonicMatrix = calculateHarmonicMatrix(selectedNotes);
 
     return (
-        <>
-            <div className={'flex-container'}>
-                <div className={'flex-child'} style={{maxWidth: '40px'}}>
-                    <select multiple={true}
-                            onChange={selectNotes()}
-                            style={{height: '90vh', width: '40px'}}>
-                        {Object.entries(notesMap).map(([note]) => {
-                            return <option key={note}
-                                           value={note}>{note}</option>
-                        })
-                        }
-                    </select>
-                </div>
-                <div className={'flex-child'}>
-                    <HarmonicTable harmonicMatrix={harmonicMatrix} />
-                    {/*<Spectogram harmonicMatrix={harmonicMatrix}/>*/}
-                    <Spectogram2 harmonicMatrix={harmonicMatrix}/>
-                </div>
-            </div>
-        </>
+        <Stack direction={{xs: 'column', md: 'row'}}
+               spacing={2}
+               sx={{p: 2}}>
+            <Box sx={{width: {xs: '100%', md: 280}, flexShrink: 0}}>
+                <Autocomplete multiple
+                              autoHighlight
+                              disableCloseOnSelect
+                              limitTags={8}
+                              options={noteOptions}
+                              value={selectedNotes}
+                              onChange={selectNotes()}
+                              renderInput={(params) => (
+                                  <TextField {...params}
+                                             label="Notes"
+                                             placeholder="Type a note, e.g. A4"/>
+                              )}/>
+            </Box>
+            <Box sx={{flexGrow: 1, minWidth: 0}}>
+                <HarmonicTable harmonicMatrix={harmonicMatrix}/>
+                {/*<Spectogram harmonicMatrix={harmonicMatrix}/>*/}
+                <Spectogram2 harmonicMatrix={harmonicMatrix}/>
+            </Box>
+        </Stack>
     );
 
     function selectNotes() {
-        return (e) => {
-            let selectedOptions = e.target.selectedOptions;
-            let selectedNotes = [];
-            for (let i = 0; i < selectedOptions.length; i++) {
-                selectedNotes.push(selectedOptions[i].value);
-            }
-            setSelectedNotes(selectedNotes);
+        // keep rows in pitch order, no matter the order the notes were picked in
+        return (event, notes) => {
+            setSelectedNotes([...notes].sort(
+                (a, b) => noteOptions.indexOf(a) - noteOptions.indexOf(b)));
         };
     }
 }

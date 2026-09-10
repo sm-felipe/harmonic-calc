@@ -1,5 +1,5 @@
 export default function HarmonicTable({harmonicMatrix}) {
-    return <div style={{maxWidth: '80px'}}>
+    return <div style={{overflowX: 'auto'}}>
 
         <h1>Selected Notes</h1>
         <table border={1}>

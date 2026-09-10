@@ -18,17 +18,20 @@ export function Spectogram2({harmonicMatrix}) {
     });
 
 
-    return <Plot width={900} height={300} margin={{
-        left: 40,
-        right: 40,
-        top: 40,
-        bottom: 40
-    }}>
-        {seriesElems}
-        <Axis position="left" label="Decibels" paddingStart={0.01} paddingEnd={0.01}  />
-        <Axis position="bottom" label="Frequency" paddingStart={20}
-              paddingEnd={50}/>{/*    TODO configurable padding */}
-    </Plot>
+    //TODO make the plot width responsive instead of scrolling (recharts ResponsiveContainer)
+    return <div style={{overflowX: 'auto'}}>
+        <Plot width={900} height={300} margin={{
+            left: 40,
+            right: 40,
+            top: 40,
+            bottom: 40
+        }}>
+            {seriesElems}
+            <Axis position="left" label="Decibels" paddingStart={0.01} paddingEnd={0.01}  />
+            <Axis position="bottom" label="Frequency" paddingStart={20}
+                  paddingEnd={50}/>{/*    TODO configurable padding */}
+        </Plot>
+    </div>
 }
 
 function convertToPlotData(harmonicMatrix) {
