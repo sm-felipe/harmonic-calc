@@ -96,6 +96,16 @@ export class HarmonicPlayer {
             && frequencies.every((frequency, index) => Math.abs(frequency - this.partials[index].frequency) < 1e-6);
     }
 
+    // Resolves to whether the context is actually producing sound. Browsers
+    // keep a context suspended until a user gesture allows it.
+    whenRunning() {
+        if (!this.context) {
+            return Promise.resolve(false);
+        }
+        let resumed = this.context.state === 'running' ? Promise.resolve() : Promise.resolve(this.context.resume());
+        return resumed.then(() => this.context.state === 'running', () => false);
+    }
+
     setVolume(volume) {
         if (this.master) {
             this.master.gain.setTargetAtTime(volume, this.context.currentTime, 0.02);

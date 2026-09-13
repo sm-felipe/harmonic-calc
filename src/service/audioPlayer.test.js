@@ -24,7 +24,7 @@ function fakeContext() {
         state: 'suspended',
         destination: {},
         oscillators: [],
-        resume: jest.fn(),
+        resume: jest.fn(() => { context.state = 'running'; return Promise.resolve(); }),
         close: jest.fn(),
         createGain: () => fakeNode({gain: 1}),
         createDynamicsCompressor: () => fakeNode({threshold: 0, knee: 0, ratio: 1, attack: 0, release: 0}),
@@ -119,4 +119,11 @@ test('update glides gains in place when only levels change, and restarts otherwi
     player.stop();
     player.update(matrix);                          // not playing: behaves like start
     expect(player.playing).toBe(true);
+});
+
+test('whenRunning reports whether the context produces sound', async () => {
+    let player = new HarmonicPlayer(fakeContext);
+    expect(await player.whenRunning()).toBe(false);   // no context yet
+    player.start(matrix);
+    expect(await player.whenRunning()).toBe(true);
 });

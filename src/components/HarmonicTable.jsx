@@ -6,11 +6,11 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import ColourLegend from "./ColourLegend";
 import {formatCents, tuningColor} from "../service/tuning";
 import {loudnessColor} from "../service/loudness";
-
-const HEARING_RANGE_HZ = [20, 20000];
 
 export default function HarmonicTable({harmonicMatrix}) {
     // one column per harmonic number up to the highest audible one; inaudible
@@ -23,17 +23,19 @@ export default function HarmonicTable({harmonicMatrix}) {
                     sx={{display: 'block', lineHeight: 1.5, mb: 0.5, color: 'text.secondary'}}>
             Selected notes
         </Typography>
+        {harmonicMatrix.length > 0 && <ColourLegend/>}
         {/* the table never wraps: it grows to the right and scrolls horizontally */}
         <TableContainer component={Paper} variant="outlined" sx={{overflowX: 'auto'}}>
             <Table size="small" sx={{width: 'max-content', minWidth: '100%', whiteSpace: 'nowrap'}}>
                 <TableHead>
                     <TableRow>
                         {headers.map((header, column) => (
-                            <TableCell key={header}
-                                       align={column === 0 ? 'left' : 'right'}
-                                       sx={column === 0 ? stickyColumn : undefined}>
-                                {header}
-                            </TableCell>
+                            <Tooltip key={header} title={columnHint(column)} placement="top">
+                                <TableCell align={column === 0 ? 'left' : 'right'}
+                                           sx={column === 0 ? stickyColumn : undefined}>
+                                    {header}
+                                </TableCell>
+                            </Tooltip>
                         ))}
                     </TableRow>
                 </TableHead>
@@ -47,7 +49,7 @@ export default function HarmonicTable({harmonicMatrix}) {
                                 return <TableCell key={header}
                                                   align="right"
                                                   sx={{verticalAlign: 'top', ...(column === 0 ? stickyColumn : {})}}>
-                                    {frequency && <PartialCell frequency={frequency}/>}
+                                    {frequency && <PartialCell frequency={frequency} fundamental={harmonicRow.harmonics[0]}/>}
                                     {column === 0 && (
                                         <Typography variant="caption" color="text.secondary" noWrap
                                                     sx={{display: 'block', textAlign: 'left', mt: 0.5}}>
@@ -75,13 +77,13 @@ export default function HarmonicTable({harmonicMatrix}) {
 // Two right-aligned frequency lines with the same number of decimals, so the
 // partial's frequency and its nearest note's line up digit by digit. The
 // partial's frequency is coloured by how far apart they are, and its level
-// by how loud it is.
+// by how loud it is. Hovering spells the whole thing out.
 function PartialCell({frequency}) {
     let color = tuningColor(frequency.cents);
     let levelColor = loudnessColor(frequency.levelDb);
-    let outOfHearingRange = frequency.frequency < HEARING_RANGE_HZ[0] || frequency.frequency > HEARING_RANGE_HZ[1];
     // translate="no": note names, frequencies and units must survive browser translation
-    return <Box translate="no"
+    return <Tooltip title={describePartial(frequency)} placement="top" enterDelay={300}>
+    <Box translate="no"
                 sx={{display: 'grid', gridTemplateColumns: 'auto max-content', columnGap: 0.75, alignItems: 'baseline'}}>
         <Box component="span" sx={{...numeric, fontWeight: 600, color}}>
             {frequency.frequency.toFixed(2)}
@@ -100,10 +102,17 @@ function PartialCell({frequency}) {
         <Box component="span" sx={{...numeric, fontSize: '0.75rem', fontWeight: 600, color: levelColor}}>
             {frequency.levelDb.toFixed(0)} dB
         </Box>
-        <Box component="span" sx={{fontSize: '0.7rem', color: 'warning.main', textAlign: 'left'}}>
-            {outOfHearingRange ? 'OHR' : ''}
-        </Box>
-    </Box>;
+        <span/>
+    </Box>
+    </Tooltip>;
+}
+
+function describePartial(frequency) {
+    let n = frequency.harmonicNumber;
+    let what = n === 1 ? 'Fundamental' : `${ordinal(n)} partial (${n} × the fundamental)`;
+    let cents = Math.round(frequency.cents);
+    let tuning = cents === 0 ? 'exactly on' : `${Math.abs(cents)} cents ${cents > 0 ? 'above' : 'below'}`;
+    return `${what}: ${frequency.frequency.toFixed(2)} Hz, ${tuning} ${frequency.nearestNote} (${frequency.nearestNoteFrequency.toFixed(2)} Hz). Level ${frequency.levelDb.toFixed(0)} dB relative to the note's loudest partial.`;
 }
 
 const numeric = {
@@ -125,10 +134,14 @@ function lastHarmonicNumber(row) {
 }
 
 function columnLabel(index) {
+    return index === 0 ? 'Fundamental' : `${index + 1}×`;
+}
+
+function columnHint(index) {
     if (index === 0) {
-        return 'Note';
+        return 'The note itself: its frequency, its name and its level. The instrument is written underneath.';
     }
-    return ordinal(index) + ' harm';
+    return `${ordinal(index + 1)} partial: ${index + 1} times the fundamental frequency`;
 }
 
 function ordinal(n) {

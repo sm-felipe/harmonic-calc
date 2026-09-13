@@ -6,10 +6,11 @@ import {tuningColor} from '../service/tuning';
 import {indexOfNote} from '../service/notes';
 import {loudnessColor} from '../service/loudness';
 
-test('shows a hint when no note is selected', () => {
+test('shows a hint when no note is selected, and readable column headers', () => {
     render(<HarmonicTable harmonicMatrix={[]}/>);
     expect(screen.getByText(/pick one or more notes/i)).toBeInTheDocument();
-    expect(screen.getAllByRole('columnheader')).toHaveLength(9);
+    let headers = screen.getAllByRole('columnheader').map((header) => header.textContent);
+    expect(headers).toEqual(['Fundamental', '2×', '3×', '4×', '5×', '6×', '7×', '8×', '9×']);
 });
 
 test('cells align the partial and nearest-note frequencies and colour the partial by cents', () => {
@@ -25,6 +26,12 @@ test('cells align the partial and nearest-note frequencies and colour the partia
     expect(within(seventh).getByText('1540.00')).toHaveStyle({color: tuningColor(matrix[0].harmonics[6].cents)});
     expect(within(seventh).getByText('1567.98')).toBeInTheDocument();
     expect(within(seventh).getByText('1567.98').closest('[translate="no"]')).not.toBeNull();
+    // hovering spells the cell out
+    expect(within(seventh).getByText('1540.00').closest('[aria-label]'))
+        .toHaveAttribute('aria-label', expect.stringMatching(/7th partial \(7 × the fundamental\): 1540\.00 Hz, 31 cents below G6 \(1567\.98 Hz\)\. Level -18 dB/));
+    // the legend explains the two colour scales
+    expect(screen.getByText(/coloured by distance from the nearest note/i)).toBeInTheDocument();
+    expect(screen.getByText(/relative to the loudest partial/i)).toBeInTheDocument();
     expect(within(seventh).getByText('G6')).toBeInTheDocument();
     expect(within(seventh).getByText('−31¢')).toBeInTheDocument();
     expect(within(seventh).getByText('-18 dB')).toHaveStyle({color: loudnessColor(-18)});

@@ -11,6 +11,8 @@ import TuningOptions from "./components/TuningOptions";
 import DisplayOptions from "./components/DisplayOptions";
 import References from "./components/References";
 import Waveform from "./components/Waveform";
+import QuickStart from "./components/QuickStart";
+import {loadExample} from "./service/examples";
 import {DEFAULT_CYCLES} from "./service/waveform";
 import Divider from '@mui/material/Divider';
 import {buildTuningContext, defaultTuning} from "./service/temperaments";
@@ -50,6 +52,12 @@ function App() {
 
     function removeGroup(id) {
         setGroups(groups.filter((group) => group.id !== id));
+    }
+
+    function pickExample(example) {
+        let loaded = loadExample(example, newGroup);
+        setGroups(loaded.groups);
+        setTuning(loaded.tuning);
     }
 
     // Desktop: player above the selectors in a left column, results on the
@@ -93,10 +101,13 @@ function App() {
                 </Button>
             </Stack>
             <Box sx={{gridArea: 'results', minWidth: 0}}>
-                <HarmonicTable harmonicMatrix={harmonicMatrix}/>
-                {/*<Spectogram harmonicMatrix={harmonicMatrix}/>*/}
-                <Spectogram2 harmonicMatrix={harmonicMatrix}/>
-                {display.showWave && <Waveform harmonicMatrix={harmonicMatrix} cycles={display.waveCycles}/>}
+                {harmonicMatrix.length === 0
+                    ? <QuickStart onPick={pickExample}/>
+                    : <>
+                        <HarmonicTable harmonicMatrix={harmonicMatrix}/>
+                        <Spectogram2 harmonicMatrix={harmonicMatrix}/>
+                        {display.showWave && <Waveform harmonicMatrix={harmonicMatrix} cycles={display.waveCycles}/>}
+                    </>}
             </Box>
         </Box>
     </>;

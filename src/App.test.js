@@ -1,13 +1,42 @@
 import {fireEvent, render, screen, waitForElementToBeRemoved, within} from '@testing-library/react';
 import App from './App';
 
-test('starts with one instrument group, the player and the results', () => {
+test('starts with one instrument group, the player and a quick start instead of results', () => {
     render(<App/>);
     expect(screen.getAllByLabelText(/^instrument$/i)).toHaveLength(1);
     expect(screen.getAllByLabelText(/^notes$/i)).toHaveLength(1);
     expect(screen.getByText(/Custom \(adjustable harmonics\)/)).toBeInTheDocument();
     expect(screen.getByRole('button', {name: /play/i})).toBeInTheDocument();
     expect(screen.queryByRole('button', {name: /remove/i})).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', {name: /see and hear the harmonic series/i})).toBeInTheDocument();
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+});
+
+test('an example fills the selectors and the tuning in one click', () => {
+    render(<App/>);
+    fireEvent.click(screen.getByRole('button', {name: /A major chord, justly tuned/i}));
+
+    expect(screen.queryByRole('heading', {name: /see and hear/i})).not.toBeInTheDocument();
+    let rows = screen.getAllByRole('row').slice(1);
+    expect(rows).toHaveLength(3);
+    expect(within(rows[0]).getAllByText(/Singing voice, vowel "a"/).length).toBeGreaterThan(0);
+    // just intonation from A: the 5th partial of A3 is exactly C#6
+    expect(within(within(rows[0]).getAllByRole('cell')[4]).getByText('0¢')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', {name: /open menu/i}));
+    expect(screen.getByLabelText(/temperament/i)).toHaveTextContent(/just intonation/i);
+    expect(screen.getByLabelText(/^key$/i)).toHaveTextContent(/A major/);
+});
+
+test('the two-group example creates two instrument boxes', () => {
+    render(<App/>);
+    fireEvent.click(screen.getByRole('button', {name: /odd harmonics only/i}));
+    expect(screen.getAllByLabelText(/^instrument$/i)).toHaveLength(2);
+    expect(screen.getAllByRole('button', {name: /remove instrument/i})).toHaveLength(2);
+    // the custom group's 2nd harmonic is off, the clarinet's is merely weak
+    let rows = screen.getAllByRole('row').slice(1);
+    expect(within(rows[0]).getAllByRole('cell')[1]).toBeEmptyDOMElement();
+    expect(within(rows[1]).getAllByRole('cell')[1]).not.toBeEmptyDOMElement();
 });
 
 test('add instrument creates a paired instrument/notes group that can be removed', () => {
