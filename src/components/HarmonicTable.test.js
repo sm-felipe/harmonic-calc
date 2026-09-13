@@ -4,6 +4,7 @@ import {calculateHarmonicMatrix} from '../service/HarmonicMatrix';
 import {findInstrument} from '../service/instruments';
 import {tuningColor} from '../service/tuning';
 import {indexOfNote} from '../service/notes';
+import {buildTuningContext, defaultTuning} from '../service/temperaments';
 import {loudnessColor} from '../service/loudness';
 
 test('shows a hint when no note is selected, and readable column headers', () => {
@@ -50,4 +51,24 @@ test('leaves empty cells for partials below the cutoff', () => {
     let cells = within(screen.getAllByRole('row')[1]).getAllByRole('cell');
     expect(cells[11]).toBeEmptyDOMElement();
     expect(cells[10]).not.toBeEmptyDOMElement();
+});
+
+test('snapping moves every partial onto its nearest note, for the table, the sound and the chart alike', () => {
+    let snapped = buildTuningContext({...defaultTuning, snap: true});
+    let matrix = calculateHarmonicMatrix([indexOfNote('A3')], findInstrument('custom'), snapped);
+    let seventh = matrix[0].harmonics[6];
+    expect(seventh.naturalFrequency).toBeCloseTo(1540, 6);
+    expect(seventh.frequency).toBeCloseTo(1567.98, 2);   // G6
+    expect(seventh.cents).toBeCloseTo(0, 9);
+    expect(seventh.snapped).toBe(true);
+    expect(matrix[0].harmonics[0].snapped).toBe(false);   // the fundamental was already on its note
+
+    render(<HarmonicTable harmonicMatrix={matrix}/>);
+    let cells = within(screen.getAllByRole('row')[1]).getAllByRole('cell');
+    // both frequency lines now read the note's frequency
+    let [partialLine, noteLine] = within(cells[6]).getAllByText('1567.98');
+    expect(noteLine).toBeInTheDocument();
+    expect(within(cells[6]).getByText('0¢')).toBeInTheDocument();
+    expect(partialLine.closest('[aria-label]'))
+        .toHaveAttribute('aria-label', expect.stringMatching(/Snapped onto the note from its natural 1540\.00 Hz/));
 });

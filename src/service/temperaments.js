@@ -70,7 +70,9 @@ export const accidentalOptions = [
     {id: 'flats', label: 'Flats', description: 'Every accidental as a flat: Db, Eb, Gb, Ab, Bb.'},
 ];
 
-export const defaultTuning = {temperamentId: 'equal', keyId: 'C', a4: 440, accidentals: 'auto'};
+// snap: move every partial onto the nearest note of the temperament instead
+// of its natural multiple of the fundamental
+export const defaultTuning = {temperamentId: 'equal', keyId: 'C', a4: 440, accidentals: 'auto', snap: false};
 
 export function findTemperament(id) {
     return temperaments.find((temperament) => temperament.id === id) || defaultTemperament;
@@ -126,6 +128,7 @@ export function buildTuningContext(tuning) {
     return {
         frequencies: buildNoteFrequencies(tuning),
         names: buildNoteNamesFor(tuning),
+        snap: Boolean(tuning.snap),
     };
 }
 

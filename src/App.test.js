@@ -277,3 +277,16 @@ test('"Clear all" brings the quick start back', () => {
     expect(screen.getByRole('heading', {name: /see and hear the harmonic series/i})).toBeInTheDocument();
     expect(screen.getAllByLabelText(/^instrument$/i)).toHaveLength(1);
 });
+
+test('"Snap partials to notes" puts every partial on 0 cents and lands in the link', () => {
+    render(<App/>);
+    pickNote(screen.getByLabelText(/^notes$/i), 'A3');
+    let cellsText = () => within(screen.getAllByRole('row', {hidden: true})[1]).getAllByRole('cell', {hidden: true}).map((cell) => cell.textContent);
+    expect(cellsText().some((text) => /−14¢/.test(text))).toBe(true);
+
+    fireEvent.click(screen.getByRole('button', {name: /open menu/i}));
+    fireEvent.click(screen.getByLabelText(/snap partials to notes/i));
+    expect(cellsText().every((text) => /0¢/.test(text))).toBe(true);
+    expect(cellsText().some((text) => /1567\.98 Hz|1567\.98/.test(text))).toBe(true);
+    expect(window.location.search).toContain('snap=1');
+});

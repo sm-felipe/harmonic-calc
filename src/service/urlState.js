@@ -16,6 +16,7 @@ import {CYCLE_OPTIONS, DEFAULT_CYCLES} from "./waveform";
 //      values, "."-separated, only when not the default.
 // t    temperament id      k  key id      a4  reference pitch in Hz
 // acc  accidentals (equal temperament)     wave  cycles, present when the wave is shown
+// snap present (=1) when partials are snapped onto the nearest note
 
 export function encodeState({groups, tuning, display}) {
     let params = new URLSearchParams();
@@ -30,6 +31,7 @@ export function encodeState({groups, tuning, display}) {
     if (tuning.keyId !== defaultTuning.keyId) params.set('k', tuning.keyId);
     if (tuning.a4 !== defaultTuning.a4) params.set('a4', String(tuning.a4));
     if (tuning.accidentals && tuning.accidentals !== defaultTuning.accidentals) params.set('acc', tuning.accidentals);
+    if (tuning.snap) params.set('snap', '1');
     if (display.showWave) params.set('wave', String(display.waveCycles));
 
     // keep ":" "," ";" "~" readable instead of percent-encoded
@@ -65,6 +67,7 @@ export function decodeState(search) {
     let a4 = Number(params.get('a4'));
     if (referencePitches.some((pitch) => pitch.hz === a4)) tuning.a4 = a4;
     if (accidentalOptions.some((option) => option.id === params.get('acc'))) tuning.accidentals = params.get('acc');
+    tuning.snap = params.get('snap') === '1';
 
     let display = {showWave: false, waveCycles: DEFAULT_CYCLES};
     let cycles = Number(params.get('wave'));

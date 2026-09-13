@@ -34,7 +34,8 @@ class HarmonicRow {
 }
 
 class Frequency {
-    frequency;
+    frequency;          // what sounds and is plotted: the natural multiple, or the nearest note when snapping
+    naturalFrequency;   // harmonicNumber × fundamental, always
     nearestNote = '';   // name
     nearestNoteIndex;
     nearestNoteFrequency;
@@ -46,14 +47,20 @@ class Frequency {
     cents;
 
     constructor(frequency, {harmonicNumber, levelDb}, tuningContext) {
-        this.frequency = frequency;
+        this.naturalFrequency = frequency;
         this.harmonicNumber = harmonicNumber;
         this.levelDb = levelDb;
         let nearest = findNearestNote(frequency, tuningContext.frequencies);
         this.nearestNoteIndex = nearest;
         this.nearestNote = tuningContext.names[nearest];
         this.nearestNoteFrequency = tuningContext.frequencies[nearest];
-        this.cents = centsOff(frequency, this.nearestNoteFrequency);
+        // snapping puts the partial exactly on its note: nothing left to be off by
+        this.frequency = tuningContext.snap ? this.nearestNoteFrequency : frequency;
+        this.cents = centsOff(this.frequency, this.nearestNoteFrequency);
+    }
+
+    get snapped() {
+        return this.frequency !== this.naturalFrequency;
     }
 }
 

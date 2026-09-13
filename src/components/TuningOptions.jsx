@@ -1,4 +1,6 @@
+import FormControlLabel from '@mui/material/FormControlLabel';
 import ListItemText from '@mui/material/ListItemText';
+import Switch from '@mui/material/Switch';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
@@ -65,6 +67,14 @@ export default function TuningOptions({tuning, onChange}) {
                 ))}
             </TextField>
         </Stack>
+        <FormControlLabel
+            control={<Switch checked={Boolean(tuning.snap)}
+                             onChange={(event) => onChange({...tuning, snap: event.target.checked})}/>}
+            label="Snap partials to notes"/>
+        <Typography variant="caption" color="text.secondary" sx={{pl: 0.5, mt: -1}}>
+            Moves every partial onto the nearest note of this temperament instead of its natural multiple of the
+            fundamental. Nothing is off by any cents, so nothing beats: compare the sound with the switch off.
+        </Typography>
     </Stack>;
 }
 

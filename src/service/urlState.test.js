@@ -14,11 +14,11 @@ test('groups, tuning and wave round-trip through a readable query', () => {
             {instrumentId: 'bassoon', notes: [indexOfNote('A#1')]},
             {instrumentId: 'custom', notes: [indexOfNote('A3'), indexOfNote('E4')], harmonicLevels: [0, -30, -6, -30, -12, -30, -18, -30, -24]},
         ],
-        tuning: {temperamentId: 'just', keyId: 'A', a4: 415, accidentals: 'flats'},
+        tuning: {temperamentId: 'just', keyId: 'A', a4: 415, accidentals: 'flats', snap: true},
         display: {showWave: true, waveCycles: 6},
     };
     let query = encodeState(state);
-    expect(query).toBe('g=bassoon:Bb1;custom:A3,E4~0.-30.-6.-30.-12.-30.-18.-30.-24&t=just&k=A&a4=415&acc=flats&wave=6');
+    expect(query).toBe('g=bassoon:Bb1;custom:A3,E4~0.-30.-6.-30.-12.-30.-18.-30.-24&t=just&k=A&a4=415&acc=flats&snap=1&wave=6');
 
     let decoded = decodeState('?' + query);
     expect(decoded.groups).toEqual([

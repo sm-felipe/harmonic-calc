@@ -22,7 +22,6 @@ import {defaultInstrument, findInstrument} from "./service/instruments";
 
 //TODO error bars https://react-plot.zakodium.com/series/barSeries#3-errorbars
 //TODO refactor: organizar classes e functions
-//TODO toggle to force all the instruments to plain in-tune harmonics, disrespecting the multiple rule (respecting the temperament)
 //TODO actually read MusicXML music sheets
 
 let nextGroupId = 1;

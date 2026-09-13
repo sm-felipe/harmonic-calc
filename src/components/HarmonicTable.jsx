@@ -113,7 +113,8 @@ function describePartial(frequency) {
     let what = n === 1 ? 'Fundamental' : `${ordinal(n)} partial (${n} × the fundamental)`;
     let cents = Math.round(frequency.cents);
     let tuning = cents === 0 ? 'exactly on' : `${Math.abs(cents)} cents ${cents > 0 ? 'above' : 'below'}`;
-    return `${what}: ${frequency.frequency.toFixed(2)} Hz, ${tuning} ${frequency.nearestNote} (${frequency.nearestNoteFrequency.toFixed(2)} Hz). Level ${frequency.levelDb.toFixed(0)} dB relative to the note's loudest partial.`;
+    let snapped = frequency.snapped ? ` Snapped onto the note from its natural ${frequency.naturalFrequency.toFixed(2)} Hz.` : '';
+    return `${what}: ${frequency.frequency.toFixed(2)} Hz, ${tuning} ${frequency.nearestNote} (${frequency.nearestNoteFrequency.toFixed(2)} Hz).${snapped} Level ${frequency.levelDb.toFixed(0)} dB relative to the note's loudest partial.`;
 }
 
 const numeric = {
