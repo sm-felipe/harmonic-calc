@@ -31,11 +31,6 @@ export function Spectogram2({harmonicMatrix}) {
                     sx={{display: 'block', lineHeight: 1.5, color: 'text.secondary'}}>
             Spectrum
         </Typography>
-        <Typography variant="caption" color="text.secondary" sx={{display: 'block', mb: 0.5}}>
-            One bar per partial; height is its level in dB below the note's loudest partial. Labels name the
-            nearest note, coloured by how far off it is. Click a legend entry to hide or show that note.
-            {!labelled && ' Labels are hidden while there are this many partials.'}
-        </Typography>
         {/* note labels and numbers must not be machine-translated */}
         <Box ref={containerRef} translate="no" sx={{overflowX: 'auto', ...scrollShadows}}>
             <Plot width={plotWidth} height={270 + LEGEND_ROW_PX * series.length}
@@ -59,6 +54,11 @@ export function Spectogram2({harmonicMatrix}) {
                 <Legend position="bottom" showHide labelStyle={{fontSize: 12}}/>
             </Plot>
         </Box>
+        <Typography variant="caption" color="text.secondary" sx={{display: 'block', mt: 0.75}}>
+            One bar per partial; height is its level in dB below the note's loudest partial. Labels name the
+            nearest note, coloured by how far off it is. Click a legend entry to hide or show that note.
+            {!labelled && ' Labels are hidden while there are this many partials.'}
+        </Typography>
     </Box>;
 }
 
