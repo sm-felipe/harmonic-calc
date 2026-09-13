@@ -18,8 +18,11 @@ export default function HarmonicTable({harmonicMatrix}) {
     let columnCount = Math.max(9, ...harmonicMatrix.map((row) => lastHarmonicNumber(row)));
     let headers = Array.from({length: columnCount}, (_, index) => columnLabel(index));
 
-    return <Box sx={{mb: 3}}>
-        <Typography variant="h5" component="h1" sx={{mb: 1.5}}>Selected Notes</Typography>
+    return <Box sx={{mb: 2}}>
+        <Typography variant="overline" component="h2"
+                    sx={{display: 'block', lineHeight: 1.5, mb: 0.5, color: 'text.secondary'}}>
+            Selected notes
+        </Typography>
         {/* the table never wraps: it grows to the right and scrolls horizontally */}
         <TableContainer component={Paper} variant="outlined" sx={{overflowX: 'auto'}}>
             <Table size="small" sx={{width: 'max-content', minWidth: '100%', whiteSpace: 'nowrap'}}>

@@ -6,6 +6,7 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import {findInstrument, instruments} from "../service/instruments";
+import {octaveHints, octaveOf} from "../service/notes";
 
 // One instrument and the notes it plays. Several groups can be combined so
 // that, say, a bassoon holds the bass while voices sing the upper parts.
@@ -38,6 +39,9 @@ export default function InstrumentGroup({index, group, noteOptions, canRemove, o
                           disableCloseOnSelect
                           limitTags={8}
                           options={noteOptions}
+                          groupBy={(note) => octaveOf(note)}
+                          renderGroup={renderOctaveGroup}
+                          slotProps={{listbox: {sx: compactNoteList}}}
                           value={group.notes}
                           onChange={(event, notes) => onChange({...group, notes: sortByPitch(notes, noteOptions)})}
                           renderInput={(params) => (
@@ -48,6 +52,67 @@ export default function InstrumentGroup({index, group, noteOptions, canRemove, o
         </Stack>
     </Paper>;
 }
+
+// Group header "Octave N" with an optional landmark hint on the right. Uses
+// MUI's own class names so the compact styles below still apply.
+function renderOctaveGroup({key, group, children}) {
+    let hint = octaveHints[group];
+    return <li key={key}>
+        <div className="MuiAutocomplete-groupLabel">
+            <span className="octave-name">Octave {group}</span>
+            {hint && <span className="octave-hint">{hint}</span>}
+        </div>
+        <ul className="MuiAutocomplete-groupUl">{children}</ul>
+    </li>;
+}
+
+// Each octave as a 6-column grid (C..F over F#..B) with compact cells, so a
+// whole octave takes three short rows instead of twelve tall ones.
+const compactNoteList = {
+    maxHeight: '60vh',
+    py: 0,
+    '& .MuiAutocomplete-groupLabel': {
+        display: 'flex',
+        alignItems: 'baseline',
+        gap: 1,
+        lineHeight: 1.4,
+        py: 0.5,
+        fontSize: '0.7rem',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        backgroundColor: 'background.paper',
+        position: 'sticky',
+        top: -1,
+    },
+    '& .octave-name': {
+        whiteSpace: 'nowrap',
+        flexShrink: 0,
+    },
+    '& .octave-hint': {
+        textTransform: 'none',
+        letterSpacing: 0,
+        fontWeight: 400,
+        color: 'text.disabled',
+        whiteSpace: 'normal',
+        textAlign: 'right',
+        marginLeft: 'auto',
+    },
+    '& .MuiAutocomplete-groupUl': {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(6, 1fr)',
+        px: 0.5,
+        pb: 0.5,
+    },
+    // MUI indents grouped options with a more specific selector, so match it
+    '& .MuiAutocomplete-groupUl .MuiAutocomplete-option': {
+        minHeight: 28,
+        px: 0,
+        py: 0,
+        justifyContent: 'center',
+        fontSize: '0.75rem',
+        borderRadius: 1,
+    },
+};
 
 // keep rows in pitch order, no matter the order the notes were picked in
 function sortByPitch(notes, noteOptions) {

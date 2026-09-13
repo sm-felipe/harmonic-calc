@@ -6,6 +6,8 @@ import {calculateHarmonicMatrix} from "./service/HarmonicMatrix";
 import {Spectogram2} from "./components/Spectogram2";
 import Player from "./components/Player";
 import InstrumentGroup from "./components/InstrumentGroup";
+import TopBar from "./components/TopBar";
+import OptionsDrawer from "./components/OptionsDrawer";
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
@@ -28,6 +30,7 @@ function newGroup() {
 
 function App() {
     let [groups, setGroups] = useState(() => [newGroup()]);
+    let [menuOpen, setMenuOpen] = useState(false);
 
     // memoised so the player only restarts when the sound actually changes
     let harmonicMatrix = useMemo(
@@ -45,7 +48,9 @@ function App() {
     // Desktop: player above the selectors in a left column, results on the
     // right. Phone: selectors first to invite interaction, then table, chart
     // and the player last.
-    return (
+    return <>
+        <TopBar onMenuClick={() => setMenuOpen(true)}/>
+        <OptionsDrawer open={menuOpen} onClose={() => setMenuOpen(false)}/>
         <Box sx={{
             p: 2,
             display: 'grid',
@@ -80,7 +85,7 @@ function App() {
                 <Spectogram2 harmonicMatrix={harmonicMatrix}/>
             </Box>
         </Box>
-    );
+    </>;
 }
 
 export default App;

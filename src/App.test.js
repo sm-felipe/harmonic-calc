@@ -1,4 +1,4 @@
-import {fireEvent, render, screen, within} from '@testing-library/react';
+import {fireEvent, render, screen, waitForElementToBeRemoved, within} from '@testing-library/react';
 import App from './App';
 
 test('starts with one instrument group, the player and the results', () => {
@@ -46,3 +46,30 @@ function pickNote(input, note) {
     fireEvent.click(screen.getByRole('option', {name: note}));
     fireEvent.keyDown(input, {key: 'Escape'});
 }
+
+test('the hamburger menu opens and closes the options drawer', async () => {
+    render(<App/>);
+    expect(screen.queryByRole('heading', {name: 'Options'})).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', {name: /open menu/i}));
+    expect(screen.getByRole('heading', {name: 'Options'})).toBeInTheDocument();
+    expect(screen.getByText(/more options will live here/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', {name: /close menu/i}));
+    await waitForElementToBeRemoved(() => screen.queryByRole('heading', {name: 'Options'}));
+});
+
+test('note options are grouped by octave', () => {
+    render(<App/>);
+    let input = screen.getByLabelText(/^notes$/i);
+    fireEvent.mouseDown(input);
+    fireEvent.change(input, {target: {value: 'A'}});
+
+    let listbox = screen.getByRole('listbox');
+    let headers = within(listbox).getAllByText(/^Octave \d+$/).map((header) => header.textContent);
+    expect(headers.slice(0, 3)).toEqual(['Octave 0', 'Octave 1', 'Octave 2']);
+    expect(within(listbox).getByRole('option', {name: 'A4'})).toBeInTheDocument();
+    // landmark hints sit next to some octave headers
+    expect(within(listbox).getByText(/middle C/)).toBeInTheDocument();
+    expect(within(listbox).getByText(/highest piano key/)).toBeInTheDocument();
+});
