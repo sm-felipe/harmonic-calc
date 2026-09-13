@@ -9,6 +9,7 @@ import TableRow from '@mui/material/TableRow';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import ColourLegend from "./ColourLegend";
+import scrollShadows from "./scrollShadows";
 import {formatCents, tuningColor} from "../service/tuning";
 import {loudnessColor} from "../service/loudness";
 
@@ -25,7 +26,7 @@ export default function HarmonicTable({harmonicMatrix}) {
         </Typography>
         {harmonicMatrix.length > 0 && <ColourLegend/>}
         {/* the table never wraps: it grows to the right and scrolls horizontally */}
-        <TableContainer component={Paper} variant="outlined" sx={{overflowX: 'auto'}}>
+        <TableContainer component={Paper} variant="outlined" sx={{overflowX: 'auto', ...scrollShadows}}>
             <Table size="small" sx={{width: 'max-content', minWidth: '100%', whiteSpace: 'nowrap'}}>
                 <TableHead>
                     <TableRow>

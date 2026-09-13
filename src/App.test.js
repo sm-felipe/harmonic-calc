@@ -17,6 +17,7 @@ test('an example fills the selectors and the tuning in one click', () => {
     fireEvent.click(screen.getByRole('button', {name: /A major chord, justly tuned/i}));
 
     expect(screen.queryByRole('heading', {name: /see and hear/i})).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', {name: /^spectrum$/i})).toBeInTheDocument();
     let rows = screen.getAllByRole('row').slice(1);
     expect(rows).toHaveLength(3);
     expect(within(rows[0]).getAllByText(/Singing voice, vowel "a"/).length).toBeGreaterThan(0);
@@ -66,7 +67,8 @@ test('notes from every group end up in the table, labelled with their instrument
     expect(rows).toHaveLength(2);
     expect(within(rows[0]).getAllByText('440.00').length).toBeGreaterThan(0);
     expect(within(rows[1]).getAllByText('440.00').length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Custom \(adjustable harmonics\)/)).toHaveLength(2 + 2);
+    // each row names its instrument (the selectors and the chart legend say it too)
+    expect(within(screen.getByRole('table')).getAllByText(/Custom \(adjustable harmonics\)/)).toHaveLength(2);
 });
 
 function pickNote(input, note) {

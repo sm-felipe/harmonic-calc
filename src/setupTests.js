@@ -17,3 +17,4 @@ if (typeof window.ResizeObserver === 'undefined') {
 if (typeof window.SVGElement !== 'undefined' && !window.SVGElement.prototype.getBBox) {
     window.SVGElement.prototype.getBBox = () => ({x: 0, y: 0, width: 0, height: 0});
 }
+

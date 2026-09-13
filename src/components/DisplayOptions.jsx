@@ -29,7 +29,8 @@ export default function DisplayOptions({display, onChange}) {
             )}
         </Stack>
         <Typography variant="caption" color="text.secondary" sx={{pl: 0.5}}>
-            Draws a few wavelengths of the resulting sound under the spectrum. More cycles show the beating between notes.
+            Draws the resulting sound under the spectrum. "Cycles" is how many wavelengths of the lowest note are
+            shown: one shows the shape, more show the beating between notes.
         </Typography>
     </Stack>;
 }

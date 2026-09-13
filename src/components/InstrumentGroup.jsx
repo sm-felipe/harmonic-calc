@@ -101,7 +101,7 @@ const compactNoteList = {
         textTransform: 'none',
         letterSpacing: 0,
         fontWeight: 400,
-        color: 'text.disabled',
+        color: 'text.secondary',
         whiteSpace: 'normal',
         textAlign: 'right',
         marginLeft: 'auto',

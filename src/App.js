@@ -1,4 +1,3 @@
-import './App.css';
 import {useMemo, useState} from "react";
 import HarmonicTable from "./components/HarmonicTable";
 import {calculateHarmonicMatrix} from "./service/HarmonicMatrix";
@@ -19,6 +18,7 @@ import {buildTuningContext, defaultTuning} from "./service/temperaments";
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
+import Tooltip from '@mui/material/Tooltip';
 import {defaultInstrument, findInstrument} from "./service/instruments";
 
 //TODO error bars https://react-plot.zakodium.com/series/barSeries#3-errorbars
@@ -96,9 +96,11 @@ function App() {
                                      onChange={updateGroup}
                                      onRemove={() => removeGroup(group.id)}/>
                 ))}
-                <Button variant="outlined" onClick={() => setGroups([...groups, newGroup()])}>
-                    + Add instrument
-                </Button>
+                <Tooltip title="Add another instrument with its own notes, to mix timbres" describeChild>
+                    <Button variant="outlined" onClick={() => setGroups([...groups, newGroup()])}>
+                        + Add instrument
+                    </Button>
+                </Tooltip>
             </Stack>
             <Box sx={{gridArea: 'results', minWidth: 0}}>
                 {harmonicMatrix.length === 0

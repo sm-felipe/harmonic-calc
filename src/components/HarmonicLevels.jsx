@@ -29,7 +29,10 @@ export default function HarmonicLevels({levels, onChange}) {
                               '&.Mui-expanded': {minHeight: 30},
                               '& .MuiAccordionSummary-content': {my: 0, '&.Mui-expanded': {my: 0}},
                           }}>
-            <Typography variant="caption" sx={{lineHeight: '30px'}}>Harmonic levels</Typography>
+            <Typography variant="caption" noWrap sx={{lineHeight: '30px', minWidth: 0}}>
+                Harmonic levels
+                <Box component="span" sx={{color: 'text.secondary', ml: 1}}>adjust each partial</Box>
+            </Typography>
         </AccordionSummary>
         <AccordionDetails sx={{pt: 0, px: 1}}>
             {/* nine 24px columns fit the 300px side column; more would scroll sideways */}
@@ -54,7 +57,7 @@ export default function HarmonicLevels({levels, onChange}) {
                     ))}
                 </Stack>
             </Box>
-            <Typography variant="caption" color="text.disabled" sx={{display: 'block', mt: 1, px: 1}}>
+            <Typography variant="caption" color="text.secondary" sx={{display: 'block', mt: 1, px: 1}}>
                 dB below the loudest possible partial; the bottom of a slider switches the harmonic off.
             </Typography>
             <Stack direction="row" spacing={0.5} sx={{mt: 1, px: 0.5, flexWrap: 'wrap'}}>
