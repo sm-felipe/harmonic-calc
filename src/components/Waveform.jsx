@@ -27,6 +27,7 @@ export default function Waveform({harmonicMatrix, cycles}) {
     let span = wave.cycles === 1
         ? `One wavelength of ${wave.lowestNote}`
         : `${wave.cycles} wavelengths of ${wave.lowestNote}`;
+    let noteName = <Box component="span" translate="no">{wave.lowestNote}</Box>;
 
     return <Box sx={{mt: 2}}>
         <Typography variant="overline" component="h2"
@@ -59,7 +60,8 @@ export default function Waveform({harmonicMatrix, cycles}) {
                   strokeLinejoin="round"/>
         </Box>
         <Typography variant="caption" color="text.secondary" sx={{display: 'block', mt: 0.5}}>
-            {span}, {periodMs.toFixed(2)} ms each
+            {wave.cycles === 1 ? 'One wavelength of ' : `${wave.cycles} wavelengths of `}{noteName},{' '}
+            <Box component="span" translate="no">{periodMs.toFixed(2)} ms</Box> each
             {' · '}{partials} summed in phase, amplitude normalised
         </Typography>
     </Box>;

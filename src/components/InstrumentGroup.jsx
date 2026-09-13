@@ -49,7 +49,8 @@ export default function InstrumentGroup({index, group, noteNames, canRemove, onC
                           filterOptions={filterByAnySpelling}
                           groupBy={(note) => octaveOf(note)}
                           renderGroup={renderOctaveGroup}
-                          slotProps={{listbox: {sx: compactNoteList}}}
+                          renderOption={renderNoteOption}
+                          slotProps={{listbox: {sx: compactNoteList}, chip: {translate: 'no'}}}
                           value={group.notes}
                           onChange={(event, notes) => onChange({...group, notes: sortByPitch(notes)})}
                           renderInput={(params) => (
@@ -121,6 +122,12 @@ const compactNoteList = {
         borderRadius: 1,
     },
 };
+
+// note names must survive browser translation ("A4" is not a paper size)
+function renderNoteOption(props, note, state, ownerState) {
+    let {key, ...rest} = props;
+    return <li key={key} {...rest} translate="no">{ownerState.getOptionLabel(note)}</li>;
+}
 
 // typing "Eb4" or "D#4" finds the same pitch, whatever the current spelling
 const filterByAnySpelling = createFilterOptions({

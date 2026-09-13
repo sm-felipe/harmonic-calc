@@ -10,6 +10,7 @@ import OptionsDrawer from "./components/OptionsDrawer";
 import TuningOptions from "./components/TuningOptions";
 import DisplayOptions from "./components/DisplayOptions";
 import References from "./components/References";
+import TranslateHint from "./components/TranslateHint";
 import Waveform from "./components/Waveform";
 import {DEFAULT_CYCLES} from "./service/waveform";
 import Divider from '@mui/material/Divider';
@@ -57,6 +58,7 @@ function App() {
     // and the player last.
     return <>
         <TopBar onMenuClick={() => setMenuOpen(true)}/>
+        <TranslateHint/>
         <OptionsDrawer open={menuOpen} onClose={() => setMenuOpen(false)}>
             <TuningOptions tuning={tuning} onChange={setTuning}/>
             <Divider sx={{my: 3}}/>

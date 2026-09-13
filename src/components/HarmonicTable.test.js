@@ -24,6 +24,7 @@ test('cells align the partial and nearest-note frequencies and colour the partia
     let seventh = cells[6];
     expect(within(seventh).getByText('1540.00')).toHaveStyle({color: tuningColor(matrix[0].harmonics[6].cents)});
     expect(within(seventh).getByText('1567.98')).toBeInTheDocument();
+    expect(within(seventh).getByText('1567.98').closest('[translate="no"]')).not.toBeNull();
     expect(within(seventh).getByText('G6')).toBeInTheDocument();
     expect(within(seventh).getByText('−31¢')).toBeInTheDocument();
     expect(within(seventh).getByText('-18 dB')).toHaveStyle({color: loudnessColor(-18)});

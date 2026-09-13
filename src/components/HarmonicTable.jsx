@@ -80,7 +80,9 @@ function PartialCell({frequency}) {
     let color = tuningColor(frequency.cents);
     let levelColor = loudnessColor(frequency.levelDb);
     let outOfHearingRange = frequency.frequency < HEARING_RANGE_HZ[0] || frequency.frequency > HEARING_RANGE_HZ[1];
-    return <Box sx={{display: 'grid', gridTemplateColumns: 'auto max-content', columnGap: 0.75, alignItems: 'baseline'}}>
+    // translate="no": note names, frequencies and units must survive browser translation
+    return <Box translate="no"
+                sx={{display: 'grid', gridTemplateColumns: 'auto max-content', columnGap: 0.75, alignItems: 'baseline'}}>
         <Box component="span" sx={{...numeric, fontWeight: 600, color}}>
             {frequency.frequency.toFixed(2)}
         </Box>

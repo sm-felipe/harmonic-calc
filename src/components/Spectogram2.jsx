@@ -27,7 +27,8 @@ export function Spectogram2({harmonicMatrix, instrument}) {
 
 
     //TODO make the plot width responsive instead of scrolling (recharts ResponsiveContainer)
-    return <div style={{overflowX: 'auto'}}>
+    // note labels and numbers must not be machine-translated
+    return <div style={{overflowX: 'auto'}} translate="no">
         <Plot width={900} height={300} margin={{
             left: 40,
             right: 40,

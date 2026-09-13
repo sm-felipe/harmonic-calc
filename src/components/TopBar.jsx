@@ -11,7 +11,7 @@ export default function TopBar({onMenuClick}) {
             <IconButton edge="start" onClick={onMenuClick} aria-label="Open menu" sx={{mr: 1}}>
                 <MenuIcon/>
             </IconButton>
-            <Typography variant="h6" component="h1" sx={{fontWeight: 600}}>
+            <Typography variant="h6" component="h1" translate="no" sx={{fontWeight: 600}}>
                 Harmonic Calc
             </Typography>
         </Toolbar>

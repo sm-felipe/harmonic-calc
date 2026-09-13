@@ -164,7 +164,9 @@ test('"Show wave" in the options draws one wavelength of the resulting sound', a
     fireEvent.click(screen.getByLabelText(/show wave/i));
     let wave = screen.getByRole('img', {name: /3 wavelengths of A3, 9 partials/i, hidden: true});
     expect(wave).toBeInTheDocument();
-    expect(screen.getByText(/3 wavelengths of A3, 4\.55 ms each/, {hidden: true})).toBeInTheDocument();
+    let caption = (content, element) => element.classList.contains('MuiTypography-caption')
+        && /3 wavelengths of A3, 4\.55 ms each/.test(element.textContent);
+    expect(screen.getByText(caption)).toBeInTheDocument();
 
     fireEvent.mouseDown(screen.getByLabelText(/cycles/i));
     fireEvent.click(screen.getByRole('option', {name: '8'}));
