@@ -17,7 +17,7 @@ export function Spectogram2({harmonicMatrix, instrument}) {
         seriesElems.push(<BarSeries key={index + 'bar'}
                                     data={harmonicRow}
                                     displayMarkers={true}
-                                    label={harmonicMatrix[index].note}
+                                    label={harmonicMatrix[index].note + ' · ' + harmonicMatrix[index].instrument.label}
                                     pointLabel={({nearestNote}) => nearestNote}
                                     pointLabelStyle={{
                                         fill: ({cents}) => tuningColor(cents),

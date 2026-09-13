@@ -35,16 +35,22 @@ export default function HarmonicTable({harmonicMatrix}) {
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {harmonicMatrix.map((harmonicRow) => {
+                    {harmonicMatrix.map((harmonicRow, rowIndex) => {
                         let byHarmonicNumber = new Map(
                             harmonicRow.harmonics.map((frequency) => [frequency.harmonicNumber, frequency]));
-                        return <TableRow key={harmonicRow.note} hover>
+                        return <TableRow key={rowIndex + ':' + harmonicRow.note} hover>
                             {headers.map((header, column) => {
                                 let frequency = byHarmonicNumber.get(column + 1);
                                 return <TableCell key={header}
                                                   align="right"
                                                   sx={{verticalAlign: 'top', ...(column === 0 ? stickyColumn : {})}}>
                                     {frequency && <PartialCell frequency={frequency}/>}
+                                    {column === 0 && (
+                                        <Typography variant="caption" color="text.secondary" noWrap
+                                                    sx={{display: 'block', textAlign: 'left', mt: 0.5}}>
+                                            {harmonicRow.instrument.label}
+                                        </Typography>
+                                    )}
                                 </TableCell>;
                             })}
                         </TableRow>;

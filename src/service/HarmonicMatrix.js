@@ -13,10 +13,12 @@ export function calculateHarmonicMatrix(selectedNotes, instrument = defaultInstr
 
 class HarmonicRow {
     note;
+    instrument;
     harmonics = [];
 
     constructor(note, instrument) {
         this.note = note;
+        this.instrument = instrument;
         let fundamental = notesMap[note];
         // only the audible partials; harmonic numbers may have gaps
         for (let partial of audiblePartials(instrument, fundamental)) {
