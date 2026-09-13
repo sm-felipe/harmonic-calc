@@ -10,6 +10,7 @@ import OptionsDrawer from "./components/OptionsDrawer";
 import TuningOptions from "./components/TuningOptions";
 import DisplayOptions from "./components/DisplayOptions";
 import Waveform from "./components/Waveform";
+import {DEFAULT_CYCLES} from "./service/waveform";
 import Divider from '@mui/material/Divider';
 import {buildTuningContext, defaultTuning} from "./service/temperaments";
 import Box from '@mui/material/Box';
@@ -32,7 +33,7 @@ function App() {
     let [groups, setGroups] = useState(() => [newGroup()]);
     let [menuOpen, setMenuOpen] = useState(false);
     let [tuning, setTuning] = useState(defaultTuning);
-    let [display, setDisplay] = useState({showWave: false});
+    let [display, setDisplay] = useState({showWave: false, waveCycles: DEFAULT_CYCLES});
 
     // frequency and name of every pitch in the chosen tuning; changing it
     // re-tunes and re-spells fundamentals, nearest-note matches and the player
@@ -94,7 +95,7 @@ function App() {
                 <HarmonicTable harmonicMatrix={harmonicMatrix}/>
                 {/*<Spectogram harmonicMatrix={harmonicMatrix}/>*/}
                 <Spectogram2 harmonicMatrix={harmonicMatrix}/>
-                {display.showWave && <Waveform harmonicMatrix={harmonicMatrix}/>}
+                {display.showWave && <Waveform harmonicMatrix={harmonicMatrix} cycles={display.waveCycles}/>}
             </Box>
         </Box>
     </>;

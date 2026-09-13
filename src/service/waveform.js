@@ -2,14 +2,17 @@ import {amplitudeFromDb} from "./audioPlayer";
 
 // The waveform that the player produces: every audible partial of every
 // selected note summed as a sine, all starting in phase, with the amplitude
-// its level in dB calls for. One period of the lowest fundamental is
-// sampled; a single note repeats exactly over that length, a chord does not
+// its level in dB calls for. A few periods of the lowest fundamental are
+// sampled; a single note repeats exactly every period, a chord does not
 // (its true period is the beat cycle of all the notes), but the lowest
-// note's wavelength is a well-defined, readable window either way.
+// note's wavelength is a well-defined, readable unit either way. Three
+// cycles show the repetition without hiding the detail; more show beating.
 
-export const DEFAULT_SAMPLES = 600;
+export const DEFAULT_CYCLES = 3;
+export const CYCLE_OPTIONS = [1, 2, 3, 4, 6, 8];
+const SAMPLES_PER_CYCLE = 300;
 
-export function sampleWaveform(harmonicMatrix, sampleCount = DEFAULT_SAMPLES) {
+export function sampleWaveform(harmonicMatrix, cycles = DEFAULT_CYCLES, samplesPerCycle = SAMPLES_PER_CYCLE) {
     let partials = [];
     let lowest = null;
     for (let row of harmonicMatrix) {
@@ -26,10 +29,11 @@ export function sampleWaveform(harmonicMatrix, sampleCount = DEFAULT_SAMPLES) {
     }
 
     let period = 1 / lowest.frequency;
+    let sampleCount = cycles * samplesPerCycle;
     let samples = new Array(sampleCount + 1);
     let peak = 0;
     for (let i = 0; i <= sampleCount; i++) {
-        let t = period * i / sampleCount;
+        let t = cycles * period * i / sampleCount;
         let y = 0;
         for (let {frequency, amplitude} of partials) {
             y += amplitude * Math.sin(2 * Math.PI * frequency * t);
@@ -41,6 +45,7 @@ export function sampleWaveform(harmonicMatrix, sampleCount = DEFAULT_SAMPLES) {
     let scale = peak > 0 ? 1 / peak : 1;
     return {
         period,
+        cycles,
         lowestNote: lowest.noteName,
         partialCount: partials.length,
         samples: samples.map((y) => y * scale),

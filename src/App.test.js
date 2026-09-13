@@ -156,9 +156,13 @@ test('"Show wave" in the options draws one wavelength of the resulting sound', a
 
     fireEvent.click(screen.getByRole('button', {name: /open menu/i}));
     fireEvent.click(screen.getByLabelText(/show wave/i));
-    let wave = screen.getByRole('img', {name: /one wavelength of A3, 9 partials/i, hidden: true});
+    let wave = screen.getByRole('img', {name: /3 wavelengths of A3, 9 partials/i, hidden: true});
     expect(wave).toBeInTheDocument();
-    expect(screen.getByText(/One wavelength of A3: 4\.55 ms/, {hidden: true})).toBeInTheDocument();
+    expect(screen.getByText(/3 wavelengths of A3, 4\.55 ms each/, {hidden: true})).toBeInTheDocument();
+
+    fireEvent.mouseDown(screen.getByLabelText(/cycles/i));
+    fireEvent.click(screen.getByRole('option', {name: '8'}));
+    expect(screen.getByRole('img', {name: /8 wavelengths of A3/i, hidden: true})).toBeInTheDocument();
 
     // it follows the sound: switching a harmonic off changes the partial count
     fireEvent.click(screen.getByRole('button', {name: /close menu/i}));
