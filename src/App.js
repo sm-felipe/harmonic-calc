@@ -9,6 +9,7 @@ import TopBar from "./components/TopBar";
 import OptionsDrawer from "./components/OptionsDrawer";
 import TuningOptions from "./components/TuningOptions";
 import DisplayOptions from "./components/DisplayOptions";
+import References from "./components/References";
 import Waveform from "./components/Waveform";
 import {DEFAULT_CYCLES} from "./service/waveform";
 import Divider from '@mui/material/Divider';
@@ -18,9 +19,7 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import {defaultInstrument, findInstrument} from "./service/instruments";
 
-//TODO plot das ondas
 //TODO error bars https://react-plot.zakodium.com/series/barSeries#3-errorbars
-//TODO instruções e créditos (TET12, 440Hz, OHR, de onde peguei presets de instrumentos, etc)
 //TODO refactor: organizar classes e functions
 
 let nextGroupId = 1;
@@ -62,6 +61,8 @@ function App() {
             <TuningOptions tuning={tuning} onChange={setTuning}/>
             <Divider sx={{my: 3}}/>
             <DisplayOptions display={display} onChange={setDisplay}/>
+            <Divider sx={{my: 3}}/>
+            <References/>
         </OptionsDrawer>
         <Box sx={{
             p: 2,

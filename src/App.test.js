@@ -59,6 +59,12 @@ test('the hamburger menu opens and closes the options drawer', async () => {
     // equal temperament lets you force sharps or flats
     expect(screen.getByLabelText(/accidentals/i)).toBeInTheDocument();
 
+    // references sit collapsed at the end
+    expect(screen.getByText(/Fletcher/)).not.toBeVisible();
+    fireEvent.click(screen.getByRole('button', {name: /references/i}));
+    expect(screen.getByText(/Fletcher/)).toBeVisible();
+    expect(screen.getByRole('link', {name: /UNSW/})).toHaveAttribute('href', 'https://www.phys.unsw.edu.au/music/');
+
     fireEvent.click(screen.getByRole('button', {name: /close menu/i}));
     await waitForElementToBeRemoved(() => screen.queryByRole('heading', {name: 'Options'}));
 });
