@@ -15,7 +15,7 @@ const FLOOR_DB = REFERENCE_DB + CUTOFF_DB;
 const MAX_LABELLED_PARTIALS = 40;
 // one colour per note, in a fixed order, shared by bars, markers and legend
 const SERIES_COLOURS = ['#d32f2f', '#1976d2', '#2e7d32', '#7b1fa2', '#ef6c00', '#00838f', '#5d4037', '#c2185b'];
-const LEGEND_ROW_PX = 18;
+const LEGEND_ROW_PX = 13;
 // the plot fills its container; below this width it scrolls sideways instead
 const MIN_PLOT_WIDTH = 560;
 
@@ -33,8 +33,10 @@ export function Spectogram2({harmonicMatrix}) {
         </Typography>
         {/* note labels and numbers must not be machine-translated */}
         <Box ref={containerRef} translate="no" sx={{overflowX: 'auto', ...scrollShadows}}>
-            <Plot width={plotWidth} height={270 + LEGEND_ROW_PX * series.length}
-                  margin={{left: 60, right: 40, top: 20, bottom: 40 + LEGEND_ROW_PX * series.length}}>
+            {/* react-plot draws the bottom legend inside the plot box, so the
+                bottom margin stays tiny and the height grows with the legend */}
+            <Plot width={plotWidth} height={232 + LEGEND_ROW_PX * series.length}
+                  margin={{left: 60, right: 40, top: 20, bottom: 4}}>
                 {series.map((row, index) => {
                     let colour = SERIES_COLOURS[index % SERIES_COLOURS.length];
                     return <BarSeries key={index}
