@@ -3,6 +3,7 @@ import {audiblePartials, CUTOFF_DB, defaultInstrument, findInstrument, instrumen
 const A4 = 440;
 const Bb1 = 58.27;
 const E2 = 82.41;
+const E1 = 41.2;
 const A2 = 110;
 const D3 = 146.83;
 
@@ -87,4 +88,19 @@ test('bass voice on an open vowel is loudest near the first formant, not at the 
 
 test('unknown ids fall back to the default instrument', () => {
     expect(findInstrument('nope')).toBe(defaultInstrument);
+});
+
+test('guitar plucked 15% along the string loses the harmonics with a node there', () => {
+    let partials = levels('guitar', A2);
+    // 1/0.15 ≈ 6.7, so the 6th and 7th sit in the first notch and the 13th in the second
+    expect(level(partials, 6)).toBeLessThan(level(partials, 5) - 6);
+    expect(level(partials, 7)).toBeLessThan(level(partials, 5) - 6);
+    expect(level(partials, 13)).toBeLessThan(level(partials, 11) - 6);
+    expect(loudest(partials).harmonicNumber).toBeLessThanOrEqual(3);
+});
+
+test('bowed double bass on its low E carries the note in the 2nd-3rd harmonics', () => {
+    let number = loudest(levels('double-bass', E1)).harmonicNumber;
+    expect(number).toBeGreaterThanOrEqual(2);
+    expect(number).toBeLessThanOrEqual(4);
 });

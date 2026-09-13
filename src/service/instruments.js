@@ -9,7 +9,9 @@
 //      bass voice have a weak fundamental and strong middle harmonics);
 //   3. a high-frequency cutoff (tone-hole cutoff, radiation losses).
 // Optionally, even harmonics can be penalised below a given frequency, which
-// is the closed-pipe behaviour of the clarinet's low register.
+// is the closed-pipe behaviour of the clarinet's low register; and a plucked
+// string can carry its pluck position, which silences every harmonic that has
+// a node there (a sin(n·π·β) comb over the harmonic number).
 //
 // Values are mf approximations distilled from Meyer, "Acoustics and the
 // Performance of Music"; Fletcher & Rossing, "The Physics of Musical
@@ -144,6 +146,20 @@ export const instruments = [
         maxHarmonics: 32,
     },
     {
+        id: 'guitar',
+        label: 'Guitar (plucked, at the attack)',
+        description: 'Bridge force of a plucked string (-6 dB/oct) with the pluck ~15% along the string, which silences the 6th-7th and 13th harmonics, filtered by the body: air resonance ≈ 100 Hz, top plate ≈ 200 Hz. Spectrum just after the pluck; the decay is not modelled.',
+        sourceSlopeDb: -6,
+        pluckFraction: 0.15,
+        formants: [
+            {hz: 100, gainDb: 8, widthOctaves: 0.4},
+            {hz: 200, gainDb: 10, widthOctaves: 0.5},
+            {hz: 400, gainDb: 6, widthOctaves: 0.6},
+        ],
+        cutoffHz: 4000, cutoffSlopeDb: -12,
+        maxHarmonics: 40,
+    },
+    {
         id: 'violin',
         label: 'Violin',
         description: 'Sawtooth-like bowed string (-6 dB/oct) filtered by the body: air resonance ≈ 280 Hz, wood resonances ≈ 500 Hz and the "bridge hill" around 2.5 kHz.',
@@ -168,6 +184,20 @@ export const instruments = [
             {hz: 1500, gainDb: 6, widthOctaves: 1.0},
         ],
         cutoffHz: 4000, cutoffSlopeDb: -12,
+        maxHarmonics: 40,
+    },
+    {
+        id: 'double-bass',
+        label: 'Double bass (bowed)',
+        description: 'Bowed-string source with body resonances near 65, 110 and 220 Hz and a bridge hill around 800 Hz. The body radiates the lowest fundamentals poorly, so on the low strings the 2nd-3rd harmonics carry the note.',
+        sourceSlopeDb: -6,
+        formants: [
+            {hz: 65, gainDb: 10, widthOctaves: 0.5},
+            {hz: 110, gainDb: 14, widthOctaves: 0.5},
+            {hz: 220, gainDb: 8, widthOctaves: 0.6},
+            {hz: 800, gainDb: 6, widthOctaves: 1.0},
+        ],
+        cutoffHz: 2500, cutoffSlopeDb: -12,
         maxHarmonics: 40,
     },
 ];
@@ -220,7 +250,18 @@ function rawLevelDb(instrument, n, frequency) {
     if (instrument.evenHarmonicDb && n % 2 === 0 && frequency < instrument.evenBelowHz) {
         level += instrument.evenHarmonicDb;
     }
+    if (instrument.pluckFraction) {
+        level += pluckCombDb(instrument.pluckFraction, n);
+    }
     return level;
+}
+
+// A string plucked at fraction β of its length excites harmonic n in
+// proportion to |sin(n·π·β)|: harmonics with a node at the pluck point are
+// missing. Floored so an exact node does not become -Infinity.
+function pluckCombDb(fraction, n) {
+    let factor = Math.abs(Math.sin(n * Math.PI * fraction));
+    return 20 * Math.log10(Math.max(factor, 0.001));
 }
 
 // Gaussian bump on a log2 frequency axis; widthOctaves is the full width at half maximum.
