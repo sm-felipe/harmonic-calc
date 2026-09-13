@@ -242,3 +242,38 @@ test('copy link puts the current address on the clipboard', async () => {
     expect(await screen.findByText(/link copied/i)).toBeInTheDocument();
     expect(written[0]).toMatch(/\?g=bassoon:Bb1$/);
 });
+
+test('Back returns to the previous configuration instead of leaving the site', async () => {
+    render(<App/>);
+    let lengthBefore = window.history.length;
+    fireEvent.click(screen.getByRole('button', {name: /A bassoon/i}));
+    expect(window.location.search).toBe('?g=bassoon:Bb1');
+    expect(window.history.length).toBe(lengthBefore + 1);
+
+    // the browser moves back to the empty address and tells the page
+    window.history.replaceState(null, '', '/');
+    fireEvent(window, new PopStateEvent('popstate'));
+    expect(await screen.findByRole('heading', {name: /see and hear the harmonic series/i})).toBeInTheDocument();
+    expect(window.location.search).toBe('');
+});
+
+test('dragging a harmonic level does not pile up history entries', () => {
+    render(<App/>);
+    pickNote(screen.getByLabelText(/^notes$/i), 'A4');
+    let lengthAfterNote = window.history.length;
+    fireEvent.click(screen.getByRole('button', {name: /harmonic levels/i}));
+    let slider = screen.getByRole('slider', {name: /harmonic 2 level/i});
+    fireEvent.change(slider, {target: {value: -10}});
+    fireEvent.change(slider, {target: {value: -12}});
+    expect(window.location.search).toContain('~0.-12.');
+    expect(window.history.length).toBe(lengthAfterNote);
+});
+
+test('"Clear all" brings the quick start back', () => {
+    render(<App/>);
+    expect(screen.queryByRole('button', {name: /clear all/i})).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', {name: /odd harmonics only/i}));
+    fireEvent.click(screen.getByRole('button', {name: /clear all/i}));
+    expect(screen.getByRole('heading', {name: /see and hear the harmonic series/i})).toBeInTheDocument();
+    expect(screen.getAllByLabelText(/^instrument$/i)).toHaveLength(1);
+});

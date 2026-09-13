@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import HarmonicTable from "./components/HarmonicTable";
 import {calculateHarmonicMatrix} from "./service/HarmonicMatrix";
 import {Spectogram2} from "./components/Spectogram2";
@@ -30,7 +30,7 @@ function newGroup() {
 }
 
 // the configuration comes from the link when there is one
-function initialState() {
+function stateFromUrl() {
     let fromUrl = decodeState(window.location.search);
     let groups = fromUrl.groups.length
         ? fromUrl.groups.map((group) => ({...newGroup(), ...group}))
@@ -38,21 +38,52 @@ function initialState() {
     return {groups, tuning: fromUrl.tuning, display: fromUrl.display};
 }
 
+// What counts as a step worth a history entry: everything except the custom
+// instrument's slider levels, which change continuously while dragging.
+function historyKey({groups, tuning, display}) {
+    return encodeState({groups: groups.map(({harmonicLevels, ...group}) => group), tuning, display});
+}
+
 function App() {
-    let [initial] = useState(initialState);
+    let [initial] = useState(stateFromUrl);
     let [groups, setGroups] = useState(initial.groups);
     let [menuOpen, setMenuOpen] = useState(false);
     let [tuning, setTuning] = useState(initial.tuning);
     let [display, setDisplay] = useState(initial.display);
+    let lastHistoryKey = useRef(historyKey(initial));
+    let restoring = useRef(false);
 
-    // keep the address bar in sync, so the current link reproduces the screen
+    // Keep the address bar in sync so the current link reproduces the screen.
+    // Structural changes push a history entry, so the browser's Back button
+    // steps through what the visitor did instead of leaving the site; level
+    // drags only replace the current entry.
     useEffect(() => {
         let query = encodeState({groups, tuning, display});
         let url = window.location.pathname + (query ? '?' + query : '') + window.location.hash;
-        if (url !== window.location.pathname + window.location.search + window.location.hash) {
+        let key = historyKey({groups, tuning, display});
+        let changed = url !== window.location.pathname + window.location.search + window.location.hash;
+        if (restoring.current) {
+            restoring.current = false;
+        } else if (changed && key !== lastHistoryKey.current) {
+            window.history.pushState(null, '', url);
+        } else if (changed) {
             window.history.replaceState(null, '', url);
         }
+        lastHistoryKey.current = key;
     }, [groups, tuning, display]);
+
+    // Back / Forward: rebuild the screen from the address the browser moved to
+    useEffect(() => {
+        function onPopState() {
+            let state = stateFromUrl();
+            restoring.current = true;
+            setGroups(state.groups);
+            setTuning(state.tuning);
+            setDisplay(state.display);
+        }
+        window.addEventListener('popstate', onPopState);
+        return () => window.removeEventListener('popstate', onPopState);
+    }, []);
 
     // frequency and name of every pitch in the chosen tuning; changing it
     // re-tunes and re-spells fundamentals, nearest-note matches and the player
@@ -70,6 +101,10 @@ function App() {
 
     function removeGroup(id) {
         setGroups(groups.filter((group) => group.id !== id));
+    }
+
+    function clearAll() {
+        setGroups([newGroup()]);
     }
 
     function pickExample(example) {
@@ -127,6 +162,12 @@ function App() {
                         + Add instrument
                     </Button>
                 </Tooltip>
+                {(harmonicMatrix.length > 0 || groups.length > 1) && (
+                    <Button variant="text" color="inherit" size="small" onClick={clearAll}
+                            sx={{gridColumn: '1 / -1', color: 'text.secondary'}}>
+                        Clear all and start over
+                    </Button>
+                )}
             </Box>
             <Box sx={{gridArea: 'results', minWidth: 0, display: 'flex', flexDirection: 'column'}}>
                 {harmonicMatrix.length === 0
