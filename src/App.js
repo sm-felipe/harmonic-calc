@@ -8,6 +8,9 @@ import InstrumentGroup from "./components/InstrumentGroup";
 import TopBar from "./components/TopBar";
 import OptionsDrawer from "./components/OptionsDrawer";
 import TuningOptions from "./components/TuningOptions";
+import DisplayOptions from "./components/DisplayOptions";
+import Waveform from "./components/Waveform";
+import Divider from '@mui/material/Divider';
 import {buildTuningContext, defaultTuning} from "./service/temperaments";
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -29,6 +32,7 @@ function App() {
     let [groups, setGroups] = useState(() => [newGroup()]);
     let [menuOpen, setMenuOpen] = useState(false);
     let [tuning, setTuning] = useState(defaultTuning);
+    let [display, setDisplay] = useState({showWave: false});
 
     // frequency and name of every pitch in the chosen tuning; changing it
     // re-tunes and re-spells fundamentals, nearest-note matches and the player
@@ -55,6 +59,8 @@ function App() {
         <TopBar onMenuClick={() => setMenuOpen(true)}/>
         <OptionsDrawer open={menuOpen} onClose={() => setMenuOpen(false)}>
             <TuningOptions tuning={tuning} onChange={setTuning}/>
+            <Divider sx={{my: 3}}/>
+            <DisplayOptions display={display} onChange={setDisplay}/>
         </OptionsDrawer>
         <Box sx={{
             p: 2,
@@ -88,6 +94,7 @@ function App() {
                 <HarmonicTable harmonicMatrix={harmonicMatrix}/>
                 {/*<Spectogram harmonicMatrix={harmonicMatrix}/>*/}
                 <Spectogram2 harmonicMatrix={harmonicMatrix}/>
+                {display.showWave && <Waveform harmonicMatrix={harmonicMatrix}/>}
             </Box>
         </Box>
     </>;

@@ -148,3 +148,22 @@ test('the custom instrument has collapsed harmonic level sliders that drive the 
     fireEvent.click(screen.getByRole('button', {name: /^linear$/i}));
     expect(within(secondHarmonic()).getByText('-3 dB')).toBeInTheDocument();
 });
+
+test('"Show wave" in the options draws one wavelength of the resulting sound', async () => {
+    render(<App/>);
+    pickNote(screen.getByLabelText(/^notes$/i), 'A3');
+    expect(screen.queryByRole('img', {name: /one wavelength/i})).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', {name: /open menu/i}));
+    fireEvent.click(screen.getByLabelText(/show wave/i));
+    let wave = screen.getByRole('img', {name: /one wavelength of A3, 9 partials/i, hidden: true});
+    expect(wave).toBeInTheDocument();
+    expect(screen.getByText(/One wavelength of A3: 4\.55 ms/, {hidden: true})).toBeInTheDocument();
+
+    // it follows the sound: switching a harmonic off changes the partial count
+    fireEvent.click(screen.getByRole('button', {name: /close menu/i}));
+    await waitForElementToBeRemoved(() => screen.queryByRole('heading', {name: 'Options'}));
+    fireEvent.click(screen.getByRole('button', {name: /harmonic levels/i}));
+    fireEvent.change(screen.getByRole('slider', {name: /harmonic 2 level/i}), {target: {value: -30}});
+    expect(screen.getByRole('img', {name: /8 partials/i})).toBeInTheDocument();
+});
