@@ -35,7 +35,7 @@ export function Spectogram({harmonicMatrix}) {
                 >
                     <CartesianGrid strokeDasharray="3 3"/>
                     <XAxis type="number" dataKey="frequency" name="frequency" unit="hz"/>
-                    <YAxis type="number" dataKey="volume" name="volume" unit="db"/>
+                    <YAxis type="number" dataKey="levelDb" name="level" unit="db"/>
                     <Tooltip cursor={{strokeDasharray: '3 3'}}/>
                     <Legend/>
                     {scatterData.map((harmonicRow) => {

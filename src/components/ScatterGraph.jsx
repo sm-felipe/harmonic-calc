@@ -22,10 +22,10 @@ export function convertToScartData(harmonicMatrix) {
             let point = {
                 rootNoteName,
                 frequency: frequencyNumber,
-                volume: frequencyInstance.volume + accumulatedVolume,
+                volume: frequencyInstance.levelDb + accumulatedVolume,
             }
 
-            volumeAccumulator.set(frequencyNumber, volumeAccumulator.get(frequencyNumber) + frequencyInstance.volume);
+            volumeAccumulator.set(frequencyNumber, volumeAccumulator.get(frequencyNumber) + frequencyInstance.levelDb);
             data.push(point);
         }
         datas.push(data);

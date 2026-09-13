@@ -16,12 +16,12 @@ function addNoteHarmonics(harmonicRow, convertedMatrix) {
         let foundFrequency = findFrequencyInData(convertedMatrix, frequencyInstance);
 
         if (foundFrequency) {//adding new root nome attribute to existing frequency
-            foundFrequency[rootNoteName] = frequencyInstance.volume;
+            foundFrequency[rootNoteName] = frequencyInstance.levelDb;
 
         } else {//creating new frequency
             let newFrequency = {
                 frequency: frequencyInstance.frequency,
-                [rootNoteName]: frequencyInstance.volume
+                [rootNoteName]: frequencyInstance.levelDb
             };
             convertedMatrix.push(newFrequency);
 

@@ -1,6 +1,13 @@
 import {Axis, BarSeries, Plot} from "react-plot";
+import {CUTOFF_DB} from "../service/instruments";
 
-export function Spectogram2({harmonicMatrix}) {
+// The model gives levels relative to each note's loudest partial (0 dB). The
+// plot shows them as bars rising from the audibility cutoff, so a taller bar
+// is a louder partial: y = REFERENCE_DB + levelDb, loudest partial at REFERENCE_DB.
+const REFERENCE_DB = 80;
+const FLOOR_DB = REFERENCE_DB + CUTOFF_DB;
+
+export function Spectogram2({harmonicMatrix, instrument}) {
     //each line is a series
     let convertedMatrix = convertToPlotData(harmonicMatrix);
 
@@ -27,7 +34,8 @@ export function Spectogram2({harmonicMatrix}) {
             bottom: 40
         }}>
             {seriesElems}
-            <Axis position="left" label="Decibels" paddingStart={0.01} paddingEnd={0.01}  />
+            <Axis position="left" label={`dB (loudest partial = ${REFERENCE_DB})`}
+                  min={FLOOR_DB} max={REFERENCE_DB + 5}/>
             <Axis position="bottom" label="Frequency" paddingStart={20}
                   paddingEnd={50}/>{/*    TODO configurable padding */}
         </Plot>
@@ -42,7 +50,7 @@ function convertToPlotData(harmonicMatrix) {
             let frequencyInstance = harmonicRow.harmonics[i];
             let point = {
                 x: frequencyInstance.frequency,
-                y: frequencyInstance.volume - (i * 0.01),
+                y: REFERENCE_DB + frequencyInstance.levelDb,
                 nearestNote: frequencyInstance.nearestNote,
                 isNoteInTune: frequencyInstance.frequency - frequencyInstance.nearestNoteFrequency < 0.001
             }
@@ -54,6 +62,3 @@ function convertToPlotData(harmonicMatrix) {
     return converted;
 }
 
-function randomColor() {
-    return '#' + (Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0');
-}

@@ -1,9 +1,10 @@
 import {notesMap} from "../App";
+import {audiblePartials, defaultInstrument} from "./instruments";
 
-export function calculateHarmonicMatrix(selectedNotes) {
+export function calculateHarmonicMatrix(selectedNotes, instrument = defaultInstrument) {
     let harmonicMatrix = [];
     selectedNotes.forEach((note) => {
-        let harmonicRow = new HarmonicRow(note);
+        let harmonicRow = new HarmonicRow(note, instrument);
         harmonicMatrix.push(harmonicRow);
     });
     return harmonicMatrix;
@@ -13,12 +14,12 @@ class HarmonicRow {
     note;
     harmonics = [];
 
-    constructor(note) {
+    constructor(note, instrument) {
         this.note = note;
-        this.harmonics.push(new Frequency(notesMap[note]));
-        for (let i = 1; i <= 8; i++) {
-            let harmonic = calculateHarmonic(notesMap[note], i);
-            this.harmonics.push(new Frequency(harmonic));
+        let fundamental = notesMap[note];
+        // only the audible partials; harmonic numbers may have gaps
+        for (let partial of audiblePartials(instrument, fundamental)) {
+            this.harmonics.push(new Frequency(fundamental * partial.harmonicNumber, partial));
         }
     }
 }
@@ -27,18 +28,19 @@ class Frequency {
     frequency;
     nearestNote = '';
     nearestNoteFrequency;
-    volume = 0.5;
+    // 1 = fundamental, 2 = octave, ...
+    harmonicNumber;
+    // level relative to the loudest partial of the note, in dB (0 = loudest)
+    levelDb;
 
-    constructor(frequency) {
+    constructor(frequency, {harmonicNumber, levelDb}) {
         this.frequency = frequency;
+        this.harmonicNumber = harmonicNumber;
+        this.levelDb = levelDb;
         let nearestNote = findNearestNote(frequency);
         this.nearestNote = nearestNote.note;
         this.nearestNoteFrequency = nearestNote.nearestNoteFrequency;
     }
-}
-
-function calculateHarmonic(noteFrequency, harmonicNumber) {
-    return noteFrequency * (harmonicNumber + 1);
 }
 
 function findNearestNote(noteFrequency) {

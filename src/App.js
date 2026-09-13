@@ -8,6 +8,8 @@ import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
+import MenuItem from '@mui/material/MenuItem';
+import {defaultInstrument, findInstrument, instruments} from "./service/instruments";
 
 export let notesMap = noteFrequencyMap(440);
 
@@ -18,19 +20,29 @@ const noteOptions = Object.keys(notesMap);
 //TODO colorir as notas da série harmonica de acordo com quão desafinadas estão
 //TODO player com volume control
 //TODO volume de overtones
-//TODO presets de instrumentos controlando os volumes dos harmonicos
 //TODO instruções e créditos (TET12, 440Hz, OHR, de onde peguei presets de instrumentos, etc)
 //TODO refactor: organizar classes e functions
 
 function App() {
     let [selectedNotes, setSelectedNotes] = useState([]);
-    let harmonicMatrix = calculateHarmonicMatrix(selectedNotes);
+    let [instrumentId, setInstrumentId] = useState(defaultInstrument.id);
+    let instrument = findInstrument(instrumentId);
+    let harmonicMatrix = calculateHarmonicMatrix(selectedNotes, instrument);
 
     return (
         <Stack direction={{xs: 'column', md: 'row'}}
                spacing={2}
                sx={{p: 2}}>
-            <Box sx={{width: {xs: '100%', md: 280}, flexShrink: 0}}>
+            <Stack spacing={2} sx={{width: {xs: '100%', md: 280}, flexShrink: 0}}>
+                <TextField select
+                           label="Instrument"
+                           value={instrumentId}
+                           onChange={(event) => setInstrumentId(event.target.value)}
+                           helperText={instrument.description}>
+                    {instruments.map((option) => (
+                        <MenuItem key={option.id} value={option.id}>{option.label}</MenuItem>
+                    ))}
+                </TextField>
                 <Autocomplete multiple
                               autoHighlight
                               disableCloseOnSelect
@@ -43,11 +55,11 @@ function App() {
                                              label="Notes"
                                              placeholder="Type a note, e.g. A4"/>
                               )}/>
-            </Box>
+            </Stack>
             <Box sx={{flexGrow: 1, minWidth: 0}}>
                 <HarmonicTable harmonicMatrix={harmonicMatrix}/>
                 {/*<Spectogram harmonicMatrix={harmonicMatrix}/>*/}
-                <Spectogram2 harmonicMatrix={harmonicMatrix}/>
+                <Spectogram2 harmonicMatrix={harmonicMatrix} instrument={instrument}/>
             </Box>
         </Stack>
     );
