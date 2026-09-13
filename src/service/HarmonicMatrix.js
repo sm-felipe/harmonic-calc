@@ -1,5 +1,6 @@
 import {notesMap} from "../App";
 import {audiblePartials, defaultInstrument} from "./instruments";
+import {centsOff} from "./tuning";
 
 export function calculateHarmonicMatrix(selectedNotes, instrument = defaultInstrument) {
     let harmonicMatrix = [];
@@ -32,6 +33,8 @@ class Frequency {
     harmonicNumber;
     // level relative to the loudest partial of the note, in dB (0 = loudest)
     levelDb;
+    // how far the partial is from its nearest equal-tempered note, in cents
+    cents;
 
     constructor(frequency, {harmonicNumber, levelDb}) {
         this.frequency = frequency;
@@ -40,6 +43,7 @@ class Frequency {
         let nearestNote = findNearestNote(frequency);
         this.nearestNote = nearestNote.note;
         this.nearestNoteFrequency = nearestNote.nearestNoteFrequency;
+        this.cents = centsOff(frequency, nearestNote.nearestNoteFrequency);
     }
 }
 

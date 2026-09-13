@@ -1,5 +1,6 @@
 import {Axis, BarSeries, Plot} from "react-plot";
 import {CUTOFF_DB} from "../service/instruments";
+import {tuningColor} from "../service/tuning";
 
 // The model gives levels relative to each note's loudest partial (0 dB). The
 // plot shows them as bars rising from the audibility cutoff, so a taller bar
@@ -19,7 +20,7 @@ export function Spectogram2({harmonicMatrix, instrument}) {
                                     label={harmonicMatrix[index].note}
                                     pointLabel={({nearestNote}) => nearestNote}
                                     pointLabelStyle={{
-                                        fill: ({isNoteInTune}) => isNoteInTune ? 'green' : 'red',
+                                        fill: ({cents}) => tuningColor(cents),
                                     }}
         />)
     });
@@ -52,7 +53,7 @@ function convertToPlotData(harmonicMatrix) {
                 x: frequencyInstance.frequency,
                 y: REFERENCE_DB + frequencyInstance.levelDb,
                 nearestNote: frequencyInstance.nearestNote,
-                isNoteInTune: frequencyInstance.frequency - frequencyInstance.nearestNoteFrequency < 0.001
+                cents: frequencyInstance.cents
             }
             convertedRow.push(point);
         }
