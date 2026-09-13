@@ -1,6 +1,8 @@
 import {fireEvent, render, screen, waitForElementToBeRemoved, within} from '@testing-library/react';
 import App from './App';
 
+beforeEach(() => window.history.replaceState(null, '', '/'));
+
 test('starts with one instrument group, the player and a quick start instead of results', () => {
     render(<App/>);
     expect(screen.getAllByLabelText(/^instrument$/i)).toHaveLength(1);
@@ -209,4 +211,34 @@ test('"Show wave" in the options draws one wavelength of the resulting sound', a
     fireEvent.click(screen.getByRole('button', {name: /harmonic levels/i}));
     fireEvent.change(screen.getByRole('slider', {name: /harmonic 2 level/i}), {target: {value: -30}});
     expect(screen.getByRole('img', {name: /8 partials/i})).toBeInTheDocument();
+});
+
+test('the address bar follows the configuration, and a link restores it', () => {
+    render(<App/>);
+    expect(window.location.search).toBe('');
+    fireEvent.click(screen.getByRole('button', {name: /A major chord, justly tuned/i}));
+    expect(window.location.search).toBe('?g=voice-a:A3,Db4,E4&t=just&k=A');
+});
+
+test('opening a link reproduces its notes, instruments and tuning', () => {
+    window.history.replaceState(null, '', '/?g=bassoon:Bb1;clarinet:A3&t=meantone&k=E&a4=415&wave=2');
+    render(<App/>);
+    let rows = screen.getAllByRole('row').slice(1);
+    expect(rows).toHaveLength(2);
+    expect(within(rows[0]).getByText('Bassoon')).toBeInTheDocument();
+    expect(within(rows[1]).getByText(/Clarinet/)).toBeInTheDocument();
+    expect(within(rows[1]).getAllByText('207.50').length).toBeGreaterThan(0);   // A3 with A4 = 415 Hz
+    // in E major the chain spells the bassoon's note A#1, and the wave shows two of its cycles
+    expect(within(rows[0]).getByText('A#1')).toBeInTheDocument();
+    expect(screen.getByRole('img', {name: /2 wavelengths of A#1/i})).toBeInTheDocument();
+});
+
+test('copy link puts the current address on the clipboard', async () => {
+    let written = [];
+    Object.defineProperty(navigator, 'clipboard', {value: {writeText: (text) => { written.push(text); return Promise.resolve(); }}, configurable: true});
+    render(<App/>);
+    fireEvent.click(screen.getByRole('button', {name: /A bassoon/i}));
+    fireEvent.click(screen.getByRole('button', {name: /copy link/i}));
+    expect(await screen.findByText(/link copied/i)).toBeInTheDocument();
+    expect(written[0]).toMatch(/\?g=bassoon:Bb1$/);
 });
