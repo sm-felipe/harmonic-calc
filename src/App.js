@@ -17,7 +17,6 @@ import Divider from '@mui/material/Divider';
 import {buildTuningContext} from "./service/temperaments";
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import {defaultInstrument, findInstrument} from "./service/instruments";
 
@@ -105,7 +104,14 @@ function App() {
             <Box sx={{gridArea: 'player', pr: {md: 1}}}>
                 <Player harmonicMatrix={harmonicMatrix}/>
             </Box>
-            <Stack spacing={2} sx={{gridArea: 'selectors'}}>
+            {/* one column on phones and in the desktop side column; two side by side on tablets */}
+            <Box sx={{
+                gridArea: 'selectors',
+                display: 'grid',
+                gap: 2,
+                gridTemplateColumns: {xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))', md: 'minmax(0, 1fr)'},
+                alignItems: 'start',
+            }}>
                 {groups.map((group, index) => (
                     <InstrumentGroup key={group.id}
                                      index={index}
@@ -116,11 +122,12 @@ function App() {
                                      onRemove={() => removeGroup(group.id)}/>
                 ))}
                 <Tooltip title="Add another instrument with its own notes, to mix timbres" describeChild>
-                    <Button variant="outlined" onClick={() => setGroups([...groups, newGroup()])}>
+                    <Button variant="outlined" onClick={() => setGroups([...groups, newGroup()])}
+                            sx={{gridColumn: '1 / -1'}}>
                         + Add instrument
                     </Button>
                 </Tooltip>
-            </Stack>
+            </Box>
             <Box sx={{gridArea: 'results', minWidth: 0, display: 'flex', flexDirection: 'column'}}>
                 {harmonicMatrix.length === 0
                     ? <QuickStart onPick={pickExample}/>

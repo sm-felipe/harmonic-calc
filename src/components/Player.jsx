@@ -72,7 +72,7 @@ export default function Player({harmonicMatrix}) {
     let label = playing ? '■ Stop' : hasNotes ? `▶ Play ${noteCount} note${noteCount === 1 ? '' : 's'}` : '▶ Play';
     let hint = !hasNotes ? 'Pick a note first' : playing ? 'Stop (space bar)' : 'Play the selected notes (space bar)';
 
-    return <Stack direction="row" spacing={2} sx={{alignItems: 'center'}}>
+    return <Stack direction="row" spacing={2} useFlexGap sx={{alignItems: 'center'}}>
         <Tooltip title={hint}>
             <span>
                 <Button variant="contained"
@@ -92,7 +92,7 @@ export default function Player({harmonicMatrix}) {
                 valueLabelDisplay="auto"
                 valueLabelFormat={(value) => `${value}%`}
                 onChange={(event, value) => setVolume(value)}
-                sx={{flexGrow: 1}}/>
+                sx={{flexGrow: 1, mx: 1.5}}/>   {/* room for the thumb at either end */}
         <Snackbar open={error !== null} autoHideDuration={8000} onClose={() => setError(null)}
                   anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}>
             <Alert severity="warning" onClose={() => setError(null)} sx={{maxWidth: 480}}>{error}</Alert>
