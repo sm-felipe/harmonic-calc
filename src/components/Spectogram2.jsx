@@ -26,7 +26,7 @@ export function Spectogram2({harmonicMatrix}) {
     let [containerRef, containerWidth] = useContainerWidth();
     let plotWidth = Math.max(MIN_PLOT_WIDTH, Math.floor(containerWidth));
 
-    return <Box sx={{mt: 2}}>
+    return <Box>
         <Typography variant="overline" component="h2"
                     sx={{display: 'block', lineHeight: 1.5, color: 'text.secondary'}}>
             Spectrum
