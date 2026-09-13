@@ -24,7 +24,6 @@ export default function HarmonicTable({harmonicMatrix}) {
                     sx={{display: 'block', lineHeight: 1.5, mb: 0.5, color: 'text.secondary'}}>
             Selected notes
         </Typography>
-        {harmonicMatrix.length > 0 && <ColourLegend/>}
         {/* the table never wraps: it grows to the right and scrolls horizontally */}
         <TableContainer component={Paper} variant="outlined" sx={{overflowX: 'auto', ...scrollShadows}}>
             <Table size="small" sx={{width: 'max-content', minWidth: '100%', whiteSpace: 'nowrap'}}>
@@ -72,6 +71,7 @@ export default function HarmonicTable({harmonicMatrix}) {
                 </TableBody>
             </Table>
         </TableContainer>
+        {harmonicMatrix.length > 0 && <ColourLegend/>}
     </Box>;
 }
 

@@ -79,9 +79,9 @@ function App() {
         setTuning(loaded.tuning);
     }
 
-    // Desktop: player above the selectors in a left column, results on the
-    // right. Phone: selectors first to invite interaction, then table, chart
-    // and the player last.
+    // Desktop: player above the selectors in a left column; table, spectrum
+    // and wave on the right. Phone: selectors first to invite interaction,
+    // then the player, the spectrum, the table and the wave.
     return <>
         <TopBar onMenuClick={() => setMenuOpen(true)}/>
         <OptionsDrawer open={menuOpen} onClose={() => setMenuOpen(false)}>
@@ -98,7 +98,7 @@ function App() {
             gridTemplateColumns: {xs: 'minmax(0, 1fr)', md: '300px minmax(0, 1fr)'},
             gridTemplateRows: {md: 'auto 1fr'},
             gridTemplateAreas: {
-                xs: '"selectors" "results" "player"',
+                xs: '"selectors" "player" "results"',
                 md: '"player results" "selectors results"',
             },
         }}>
@@ -121,13 +121,21 @@ function App() {
                     </Button>
                 </Tooltip>
             </Stack>
-            <Box sx={{gridArea: 'results', minWidth: 0}}>
+            <Box sx={{gridArea: 'results', minWidth: 0, display: 'flex', flexDirection: 'column'}}>
                 {harmonicMatrix.length === 0
                     ? <QuickStart onPick={pickExample}/>
                     : <>
-                        <HarmonicTable harmonicMatrix={harmonicMatrix}/>
-                        <Spectogram2 harmonicMatrix={harmonicMatrix}/>
-                        {display.showWave && <Waveform harmonicMatrix={harmonicMatrix} cycles={display.waveCycles}/>}
+                        <Box sx={{order: {xs: 2, md: 1}}}>
+                            <HarmonicTable harmonicMatrix={harmonicMatrix}/>
+                        </Box>
+                        <Box sx={{order: {xs: 1, md: 2}, mb: {xs: 2, md: 0}}}>
+                            <Spectogram2 harmonicMatrix={harmonicMatrix}/>
+                        </Box>
+                        {display.showWave && (
+                            <Box sx={{order: 3}}>
+                                <Waveform harmonicMatrix={harmonicMatrix} cycles={display.waveCycles}/>
+                            </Box>
+                        )}
                     </>}
             </Box>
         </Box>

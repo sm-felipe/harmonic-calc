@@ -38,8 +38,8 @@ export function Spectogram2({harmonicMatrix}) {
         </Typography>
         {/* note labels and numbers must not be machine-translated */}
         <Box ref={containerRef} translate="no" sx={{overflowX: 'auto', ...scrollShadows}}>
-            <Plot width={plotWidth} height={300 + LEGEND_ROW_PX * series.length}
-                  margin={{left: 60, right: 40, top: 20, bottom: 60 + LEGEND_ROW_PX * series.length}}>
+            <Plot width={plotWidth} height={270 + LEGEND_ROW_PX * series.length}
+                  margin={{left: 60, right: 40, top: 20, bottom: 40 + LEGEND_ROW_PX * series.length}}>
                 {series.map((row, index) => {
                     let colour = SERIES_COLOURS[index % SERIES_COLOURS.length];
                     return <BarSeries key={index}

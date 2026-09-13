@@ -30,8 +30,8 @@ test('cells align the partial and nearest-note frequencies and colour the partia
     expect(within(seventh).getByText('1540.00').closest('[aria-label]'))
         .toHaveAttribute('aria-label', expect.stringMatching(/7th partial \(7 × the fundamental\): 1540\.00 Hz, 31 cents below G6 \(1567\.98 Hz\)\. Level -18 dB/));
     // the legend explains the two colour scales
-    expect(screen.getByText(/coloured by distance from the nearest note/i)).toBeInTheDocument();
-    expect(screen.getByText(/relative to the loudest partial/i)).toBeInTheDocument();
+    expect(screen.getByText(/frequency colour/i)).toBeInTheDocument();
+    expect(screen.getByText(/level colour/i)).toBeInTheDocument();
     expect(within(seventh).getByText('G6')).toBeInTheDocument();
     expect(within(seventh).getByText('−31¢')).toBeInTheDocument();
     expect(within(seventh).getByText('-18 dB')).toHaveStyle({color: loudnessColor(-18)});
