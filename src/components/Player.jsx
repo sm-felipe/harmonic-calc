@@ -76,7 +76,7 @@ export default function Player({harmonicMatrix}) {
         <Tooltip title={hint}>
             <span>
                 <Button variant="contained"
-                        color={playing ? 'error' : 'primary'}
+                        color={playing ? 'error' : 'success'}
                         disabled={!playing && !hasNotes}
                         onClick={() => setPlaying(!playing)}
                         sx={{minWidth: 96, flexShrink: 0, whiteSpace: 'nowrap'}}>
