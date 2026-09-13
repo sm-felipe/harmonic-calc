@@ -32,11 +32,11 @@ export const CUTOFF_DB = -30;
 
 export const instruments = [
     {
-        id: 'hypothetical',
-        label: 'Hypothetical (linear decay)',
-        description: 'Fundamental + 8 harmonics, each 3 dB quieter than the previous one. Not a real instrument.',
-        fixedHarmonics: 9,
-        dbPerHarmonic: -3,
+        id: 'custom',
+        label: 'Custom (adjustable harmonics)',
+        description: 'Fundamental + 8 harmonics whose levels you set yourself. Starts as a linear decay of 3 dB per harmonic. Not a real instrument.',
+        customizable: true,
+        defaultLevels: [0, -3, -6, -9, -12, -15, -18, -21, -24],
     },
     {
         id: 'voice-a',
@@ -208,17 +208,26 @@ export function findInstrument(id) {
     return instruments.find((instrument) => instrument.id === id) || defaultInstrument;
 }
 
+// Quick starting points for the custom instrument's levels
+export const CUSTOM_LEVEL_PRESETS = [
+    {id: 'linear', label: 'Linear', levels: [0, -3, -6, -9, -12, -15, -18, -21, -24]},
+    {id: 'equal', label: 'Equal', levels: [0, 0, 0, 0, 0, 0, 0, 0, 0]},
+    {id: 'odd', label: 'Odd only', levels: [0, CUTOFF_DB, -6, CUTOFF_DB, -12, CUTOFF_DB, -18, CUTOFF_DB, -24]},
+    {id: 'fundamental', label: 'Fundamental', levels: [0, CUTOFF_DB, CUTOFF_DB, CUTOFF_DB, CUTOFF_DB, CUTOFF_DB, CUTOFF_DB, CUTOFF_DB, CUTOFF_DB]},
+];
+
 /**
  * Audible partials of a note played on `instrument`, as
  * `{harmonicNumber, levelDb}` in ascending order. harmonicNumber 1 is the
- * fundamental. The loudest partial is 0 dB; partials at or below `cutoffDb`
- * are left out, so harmonic numbers may have gaps (e.g. the clarinet's even
- * harmonics).
+ * fundamental. For modelled instruments the loudest partial is 0 dB; the
+ * custom instrument uses `customLevels` (or its defaults) as given, so the
+ * user's values are not rescaled. Partials at or below `cutoffDb` are left
+ * out, so harmonic numbers may have gaps (e.g. the clarinet's even
+ * harmonics, or a custom harmonic slid all the way down).
  */
-export function audiblePartials(instrument, fundamentalHz, cutoffDb = CUTOFF_DB) {
-    let levels = instrument.fixedHarmonics
-        ? Array.from({length: instrument.fixedHarmonics},
-            (_, index) => (index * instrument.dbPerHarmonic) || 0)
+export function audiblePartials(instrument, fundamentalHz, cutoffDb = CUTOFF_DB, customLevels) {
+    let levels = instrument.customizable
+        ? (customLevels || instrument.defaultLevels)
         : normalisedLevels(instrument, fundamentalHz);
 
     return levels

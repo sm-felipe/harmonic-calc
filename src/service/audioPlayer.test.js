@@ -96,3 +96,27 @@ test('setVolume before start is a no-op and close releases the context', () => {
     expect(context.close).toHaveBeenCalled();
     expect(player.playing).toBe(false);
 });
+
+test('update glides gains in place when only levels change, and restarts otherwise', () => {
+    let context = fakeContext();
+    let player = new HarmonicPlayer(() => context);
+    player.start(matrix);
+    expect(context.oscillators).toHaveLength(3);
+
+    let quieter = [
+        {note: 'A4', harmonics: [{frequency: 440, levelDb: -6}, {frequency: 880, levelDb: -20}]},
+        {note: 'E5', harmonics: [{frequency: 659.26, levelDb: 0}]},
+    ];
+    player.update(quieter);
+    expect(context.oscillators).toHaveLength(3);   // no restart
+    expect(player.partials[0].gain.gain.setTargetAtTime).toHaveBeenCalledWith(expect.closeTo(0.501, 2), 1, expect.any(Number));
+
+    let fewer = [{note: 'A4', harmonics: [{frequency: 440, levelDb: 0}]}];
+    player.update(fewer);
+    expect(context.oscillators).toHaveLength(4);   // restarted with one oscillator
+    expect(player.partials).toHaveLength(1);
+
+    player.stop();
+    player.update(matrix);                          // not playing: behaves like start
+    expect(player.playing).toBe(true);
+});

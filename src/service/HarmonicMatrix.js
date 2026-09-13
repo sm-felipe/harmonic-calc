@@ -1,14 +1,15 @@
-import {audiblePartials, defaultInstrument} from "./instruments";
+import {audiblePartials, CUTOFF_DB, defaultInstrument} from "./instruments";
 import {centsOff} from "./tuning";
 import {defaultTuningContext} from "./temperaments";
 
 // `tuningContext` holds the frequency and the name of every pitch index in
 // the current tuning; it decides the fundamentals, which note each partial
 // is nearest to, and how notes are spelled.
-export function calculateHarmonicMatrix(selectedNotes, instrument = defaultInstrument, tuningContext = defaultTuningContext) {
+// `customLevels` are the per-harmonic dB levels of the custom instrument.
+export function calculateHarmonicMatrix(selectedNotes, instrument = defaultInstrument, tuningContext = defaultTuningContext, customLevels) {
     let harmonicMatrix = [];
     selectedNotes.forEach((note) => {
-        let harmonicRow = new HarmonicRow(note, instrument, tuningContext);
+        let harmonicRow = new HarmonicRow(note, instrument, tuningContext, customLevels);
         harmonicMatrix.push(harmonicRow);
     });
     return harmonicMatrix;
@@ -20,13 +21,13 @@ class HarmonicRow {
     instrument;
     harmonics = [];
 
-    constructor(note, instrument, tuningContext) {
+    constructor(note, instrument, tuningContext, customLevels) {
         this.note = note;
         this.noteName = tuningContext.names[note];
         this.instrument = instrument;
         let fundamental = tuningContext.frequencies[note];
         // only the audible partials; harmonic numbers may have gaps
-        for (let partial of audiblePartials(instrument, fundamental)) {
+        for (let partial of audiblePartials(instrument, fundamental, CUTOFF_DB, customLevels)) {
             this.harmonics.push(new Frequency(fundamental * partial.harmonicNumber, partial, tuningContext));
         }
     }

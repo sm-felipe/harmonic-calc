@@ -6,6 +6,7 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import {findInstrument, instruments} from "../service/instruments";
+import HarmonicLevels from "./HarmonicLevels";
 import {octaveHints, octaveOf, pitchIndices} from "../service/notes";
 import {searchNamesOf} from "../service/spelling";
 
@@ -35,6 +36,10 @@ export default function InstrumentGroup({index, group, noteNames, canRemove, onC
                     <MenuItem key={option.id} value={option.id}>{option.label}</MenuItem>
                 ))}
             </TextField>
+            {instrument.customizable && (
+                <HarmonicLevels levels={group.harmonicLevels || instrument.defaultLevels}
+                                onChange={(harmonicLevels) => onChange({...group, harmonicLevels})}/>
+            )}
             <Autocomplete multiple
                           autoHighlight
                           disableCloseOnSelect

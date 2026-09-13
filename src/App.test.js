@@ -5,7 +5,7 @@ test('starts with one instrument group, the player and the results', () => {
     render(<App/>);
     expect(screen.getAllByLabelText(/^instrument$/i)).toHaveLength(1);
     expect(screen.getAllByLabelText(/^notes$/i)).toHaveLength(1);
-    expect(screen.getByText(/Hypothetical/)).toBeInTheDocument();
+    expect(screen.getByText(/Custom \(adjustable harmonics\)/)).toBeInTheDocument();
     expect(screen.getByRole('button', {name: /play/i})).toBeInTheDocument();
     expect(screen.queryByRole('button', {name: /remove/i})).not.toBeInTheDocument();
 });
@@ -37,7 +37,7 @@ test('notes from every group end up in the table, labelled with their instrument
     expect(rows).toHaveLength(2);
     expect(within(rows[0]).getAllByText('440.00').length).toBeGreaterThan(0);
     expect(within(rows[1]).getAllByText('440.00').length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Hypothetical \(linear decay\)/)).toHaveLength(2 + 2);
+    expect(screen.getAllByText(/Custom \(adjustable harmonics\)/)).toHaveLength(2 + 2);
 });
 
 function pickNote(input, note) {
@@ -121,4 +121,30 @@ test('spelling follows the key, and a note can be found by either spelling', () 
     fireEvent.mouseDown(screen.getByLabelText(/accidentals/i));
     fireEvent.click(screen.getByRole('option', {name: /^Flats/}));
     expect(within(screen.getAllByRole('row', {hidden: true})[1]).getByText('Eb4')).toBeInTheDocument();
+});
+
+test('the custom instrument has collapsed harmonic level sliders that drive the table', () => {
+    render(<App/>);
+    pickNote(screen.getByLabelText(/^notes$/i), 'A4');
+    let secondHarmonic = () => within(screen.getAllByRole('row')[1]).getAllByRole('cell')[1];
+    expect(within(secondHarmonic()).getByText('-3 dB')).toBeInTheDocument();
+
+    // collapsed by default: the sliders are not visible until the section is expanded
+    expect(screen.queryByRole('slider', {name: /harmonic 2 level/i})).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', {name: /harmonic levels/i}));
+    let slider = screen.getByRole('slider', {name: /harmonic 2 level/i});
+    expect(slider).toHaveValue('-3');
+
+    fireEvent.change(slider, {target: {value: -12}});
+    expect(within(secondHarmonic()).getByText('-12 dB')).toBeInTheDocument();
+
+    // sliding to the bottom switches the harmonic off
+    fireEvent.change(slider, {target: {value: -30}});
+    expect(secondHarmonic()).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByRole('button', {name: /^odd only$/i}));
+    expect(secondHarmonic()).toBeEmptyDOMElement();
+    expect(within(within(screen.getAllByRole('row')[1]).getAllByRole('cell')[2]).getByText('-6 dB')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', {name: /^linear$/i}));
+    expect(within(secondHarmonic()).getByText('-3 dB')).toBeInTheDocument();
 });

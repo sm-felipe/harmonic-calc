@@ -20,10 +20,19 @@ function level(partials, harmonicNumber) {
     return partial ? partial.levelDb : -Infinity;
 }
 
-test('hypothetical instrument keeps the original 9 partials with a linear decay', () => {
-    expect(defaultInstrument.id).toBe('hypothetical');
+test('custom instrument starts as the original 9 partials with a linear decay', () => {
+    expect(defaultInstrument.id).toBe('custom');
     expect(audiblePartials(defaultInstrument, A4)).toEqual(
         [0, -3, -6, -9, -12, -15, -18, -21, -24].map((levelDb, index) => ({harmonicNumber: index + 1, levelDb})));
+});
+
+test('custom levels are used as given, not rescaled, and a level at the cutoff switches the harmonic off', () => {
+    let partials = audiblePartials(defaultInstrument, A4, CUTOFF_DB, [-10, 0, CUTOFF_DB, -5]);
+    expect(partials).toEqual([
+        {harmonicNumber: 1, levelDb: -10},
+        {harmonicNumber: 2, levelDb: 0},
+        {harmonicNumber: 4, levelDb: -5},
+    ]);
 });
 
 test('every preset has a unique id and normalises its loudest partial to 0 dB', () => {

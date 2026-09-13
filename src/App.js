@@ -22,7 +22,7 @@ import {defaultInstrument, findInstrument} from "./service/instruments";
 let nextGroupId = 1;
 
 function newGroup() {
-    return {id: nextGroupId++, instrumentId: defaultInstrument.id, notes: []};
+    return {id: nextGroupId++, instrumentId: defaultInstrument.id, notes: [], harmonicLevels: defaultInstrument.defaultLevels};
 }
 
 function App() {
@@ -37,7 +37,7 @@ function App() {
     // memoised so the player only restarts when the sound actually changes
     let harmonicMatrix = useMemo(
         () => groups.flatMap((group) =>
-            calculateHarmonicMatrix(group.notes, findInstrument(group.instrumentId), tuningContext)),
+            calculateHarmonicMatrix(group.notes, findInstrument(group.instrumentId), tuningContext, group.harmonicLevels)),
         [groups, tuningContext]);
 
     function updateGroup(updated) {

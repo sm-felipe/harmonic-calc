@@ -13,7 +13,7 @@ test('shows a hint when no note is selected', () => {
 });
 
 test('cells align the partial and nearest-note frequencies and colour the partial by cents', () => {
-    let matrix = calculateHarmonicMatrix([indexOfNote('A3')], findInstrument('hypothetical'));
+    let matrix = calculateHarmonicMatrix([indexOfNote('A3')], findInstrument('custom'));
     render(<HarmonicTable harmonicMatrix={matrix}/>);
 
     let row = screen.getAllByRole('row')[1];

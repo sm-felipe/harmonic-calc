@@ -14,11 +14,11 @@ export default function Player({harmonicMatrix}) {
 
     let hasNotes = harmonicMatrix.length > 0;
 
-    // (re)start whenever the sound changes while playing; stop when asked to
-    // or when the last note is removed
+    // follow the sound while playing (gliding gains when only levels change,
+    // restarting otherwise); stop when asked to or when the last note is removed
     useEffect(() => {
         if (playing && hasNotes) {
-            player(playerRef).start(harmonicMatrix, volumeRef.current / 100);
+            player(playerRef).update(harmonicMatrix, volumeRef.current / 100);
         } else if (playing) {
             setPlaying(false);
         } else if (playerRef.current) {

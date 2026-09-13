@@ -27,6 +27,7 @@ export class HarmonicPlayer {
     master = null;
     voice = null;
     oscillators = [];
+    partials = [];   // {gain, frequency} per oscillator, for in-place updates
 
     constructor(createContext = defaultContextFactory) {
         this.createContext = createContext;
@@ -58,10 +59,41 @@ export class HarmonicPlayer {
                 gain.connect(voice);
                 oscillator.start(now);
                 this.oscillators.push(oscillator);
+                this.partials.push({gain, frequency: partial.frequency});
             }
         }
         this.voice = voice;
         this.setVolume(volume);
+    }
+
+    /**
+     * Follow a changed matrix. When only levels changed (same partials at the
+     * same frequencies) the gains glide to their new values without
+     * restarting, so dragging a harmonic's slider is heard smoothly; any
+     * other change restarts the sound.
+     */
+    update(harmonicMatrix, volume = 1) {
+        if (!this.playing || !this.sameShape(harmonicMatrix)) {
+            this.start(harmonicMatrix, volume);
+            return;
+        }
+        let now = this.context.currentTime;
+        let index = 0;
+        for (let row of harmonicMatrix) {
+            for (let partial of row.harmonics) {
+                this.partials[index].gain.gain.setTargetAtTime(amplitudeFromDb(partial.levelDb), now, 0.02);
+                index++;
+            }
+        }
+        this.voice.gain.cancelScheduledValues(now);
+        this.voice.gain.setTargetAtTime(mixScale(harmonicMatrix), now, 0.02);
+        this.setVolume(volume);
+    }
+
+    sameShape(harmonicMatrix) {
+        let frequencies = harmonicMatrix.flatMap((row) => row.harmonics.map((partial) => partial.frequency));
+        return frequencies.length === this.partials.length
+            && frequencies.every((frequency, index) => Math.abs(frequency - this.partials[index].frequency) < 1e-6);
     }
 
     setVolume(volume) {
@@ -83,6 +115,7 @@ export class HarmonicPlayer {
             oscillator.stop(now + FADE_SECONDS);
         }
         this.oscillators = [];
+        this.partials = [];
         this.voice = null;
     }
 
