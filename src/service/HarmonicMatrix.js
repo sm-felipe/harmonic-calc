@@ -1,11 +1,13 @@
-import {notesMap} from "../App";
 import {audiblePartials, defaultInstrument} from "./instruments";
 import {centsOff} from "./tuning";
+import {defaultNotesMap} from "./temperaments";
 
-export function calculateHarmonicMatrix(selectedNotes, instrument = defaultInstrument) {
+// `notesMap` is the frequency of every note name in the current tuning; it
+// decides both the fundamentals and which note each partial is nearest to.
+export function calculateHarmonicMatrix(selectedNotes, instrument = defaultInstrument, notesMap = defaultNotesMap) {
     let harmonicMatrix = [];
     selectedNotes.forEach((note) => {
-        let harmonicRow = new HarmonicRow(note, instrument);
+        let harmonicRow = new HarmonicRow(note, instrument, notesMap);
         harmonicMatrix.push(harmonicRow);
     });
     return harmonicMatrix;
@@ -16,13 +18,13 @@ class HarmonicRow {
     instrument;
     harmonics = [];
 
-    constructor(note, instrument) {
+    constructor(note, instrument, notesMap) {
         this.note = note;
         this.instrument = instrument;
         let fundamental = notesMap[note];
         // only the audible partials; harmonic numbers may have gaps
         for (let partial of audiblePartials(instrument, fundamental)) {
-            this.harmonics.push(new Frequency(fundamental * partial.harmonicNumber, partial));
+            this.harmonics.push(new Frequency(fundamental * partial.harmonicNumber, partial, notesMap));
         }
     }
 }
@@ -38,18 +40,18 @@ class Frequency {
     // how far the partial is from its nearest equal-tempered note, in cents
     cents;
 
-    constructor(frequency, {harmonicNumber, levelDb}) {
+    constructor(frequency, {harmonicNumber, levelDb}, notesMap) {
         this.frequency = frequency;
         this.harmonicNumber = harmonicNumber;
         this.levelDb = levelDb;
-        let nearestNote = findNearestNote(frequency);
+        let nearestNote = findNearestNote(frequency, notesMap);
         this.nearestNote = nearestNote.note;
         this.nearestNoteFrequency = nearestNote.nearestNoteFrequency;
         this.cents = centsOff(frequency, nearestNote.nearestNoteFrequency);
     }
 }
 
-function findNearestNote(noteFrequency) {
+function findNearestNote(noteFrequency, notesMap) {
     let nearestNoteFrequency = 0;
     let nearestNote = '';
     for (let [note, frequency] of Object.entries(notesMap)) {

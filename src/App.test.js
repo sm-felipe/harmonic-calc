@@ -53,7 +53,10 @@ test('the hamburger menu opens and closes the options drawer', async () => {
 
     fireEvent.click(screen.getByRole('button', {name: /open menu/i}));
     expect(screen.getByRole('heading', {name: 'Options'})).toBeInTheDocument();
-    expect(screen.getByText(/more options will live here/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/temperament/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/A4 \(Hz\)/i)).toBeInTheDocument();
+    // equal temperament has no reference note
+    expect(screen.queryByLabelText(/reference note/i)).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', {name: /close menu/i}));
     await waitForElementToBeRemoved(() => screen.queryByRole('heading', {name: 'Options'}));
@@ -72,4 +75,26 @@ test('note options are grouped by octave', () => {
     // landmark hints sit next to some octave headers
     expect(within(listbox).getByText(/middle C/)).toBeInTheDocument();
     expect(within(listbox).getByText(/highest piano key/)).toBeInTheDocument();
+});
+
+test('changing the temperament re-tunes notes already on screen', () => {
+    render(<App/>);
+    pickNote(screen.getByLabelText(/^notes$/i), 'A3');
+    // the open drawer hides the page from the accessibility tree, hence `hidden`
+    let fifthHarmonic = () => within(screen.getAllByRole('row', {hidden: true})[1]).getAllByRole('cell', {hidden: true})[4];
+    expect(within(fifthHarmonic()).getByText('−14¢')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', {name: /open menu/i}));
+    fireEvent.mouseDown(screen.getByLabelText(/temperament/i));
+    fireEvent.click(screen.getByRole('option', {name: /just intonation/i}));
+    expect(screen.getByLabelText(/reference note/i)).toBeInTheDocument();
+
+    fireEvent.mouseDown(screen.getByLabelText(/reference note/i));
+    fireEvent.click(screen.getByRole('option', {name: 'A'}));
+    // with A as the tonic, the 5th harmonic of A3 is exactly C#6
+    expect(within(fifthHarmonic()).getByText('0¢')).toBeInTheDocument();
+
+    fireEvent.mouseDown(screen.getByLabelText(/A4 \(Hz\)/i));
+    fireEvent.click(screen.getByRole('option', {name: /^415 Hz/}));
+    expect(within(screen.getAllByRole('row', {hidden: true})[1]).getAllByText('207.50').length).toBeGreaterThan(0);
 });

@@ -1,21 +1,19 @@
-export default function noteFrequencyMap(middleAFreq) {
-    const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-    const noteFrequencyMap = {}
-    const C0semitonesDistance = -57;
-    for (let i = 0; i < 109 + 16; i++) {
-        const note = notes[i % 12];
-        const octave = Math.floor(i / 12);
-        noteFrequencyMap[note + octave] = calculateNote(middleAFreq, C0semitonesDistance + i);
-    }
-    return noteFrequencyMap;
-}
-function calculateNote (middleAFreq, semitonesDistance) {
-    return middleAFreq * Math.pow(2, semitonesDistance / 12);
-}
+export const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+export const OCTAVES = 11; // C0 .. E10 (125 notes)
+export const NOTE_COUNT = 125;
+
+// Note names in pitch order, C0, C#0, ... E10; the same in every tuning.
+export const noteNames = Array.from({length: NOTE_COUNT},
+    (_, index) => NOTE_NAMES[index % 12] + Math.floor(index / 12));
 
 // "C#4" -> 4
 export function octaveOf(note) {
     return Number(note.replace(/^[A-G]#?/, ''));
+}
+
+// "C#4" -> 1 (chromatic degree, C = 0)
+export function degreeOf(note) {
+    return NOTE_NAMES.indexOf(note.replace(/\d+$/, ''));
 }
 
 // Landmarks shown next to the octave headers in the note picker, to help

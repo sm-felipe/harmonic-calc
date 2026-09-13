@@ -1,5 +1,5 @@
 import './App.css';
-import noteFrequencyMap from './service/notes';
+import {noteNames} from './service/notes';
 import {useMemo, useState} from "react";
 import HarmonicTable from "./components/HarmonicTable";
 import {calculateHarmonicMatrix} from "./service/HarmonicMatrix";
@@ -8,14 +8,14 @@ import Player from "./components/Player";
 import InstrumentGroup from "./components/InstrumentGroup";
 import TopBar from "./components/TopBar";
 import OptionsDrawer from "./components/OptionsDrawer";
+import TuningOptions from "./components/TuningOptions";
+import {buildNoteFrequencyMap, defaultTuning} from "./service/temperaments";
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import {defaultInstrument, findInstrument} from "./service/instruments";
 
-export let notesMap = noteFrequencyMap(440);
-
-const noteOptions = Object.keys(notesMap);
+const noteOptions = noteNames;
 
 //TODO plot das ondas
 //TODO error bars https://react-plot.zakodium.com/series/barSeries#3-errorbars
@@ -31,11 +31,17 @@ function newGroup() {
 function App() {
     let [groups, setGroups] = useState(() => [newGroup()]);
     let [menuOpen, setMenuOpen] = useState(false);
+    let [tuning, setTuning] = useState(defaultTuning);
+
+    // the frequency of every note in the chosen temperament; changing it
+    // re-tunes fundamentals, nearest-note matches and the player alike
+    let notesMap = useMemo(() => buildNoteFrequencyMap(tuning), [tuning]);
 
     // memoised so the player only restarts when the sound actually changes
     let harmonicMatrix = useMemo(
-        () => groups.flatMap((group) => calculateHarmonicMatrix(group.notes, findInstrument(group.instrumentId))),
-        [groups]);
+        () => groups.flatMap((group) =>
+            calculateHarmonicMatrix(group.notes, findInstrument(group.instrumentId), notesMap)),
+        [groups, notesMap]);
 
     function updateGroup(updated) {
         setGroups(groups.map((group) => group.id === updated.id ? updated : group));
@@ -50,7 +56,9 @@ function App() {
     // and the player last.
     return <>
         <TopBar onMenuClick={() => setMenuOpen(true)}/>
-        <OptionsDrawer open={menuOpen} onClose={() => setMenuOpen(false)}/>
+        <OptionsDrawer open={menuOpen} onClose={() => setMenuOpen(false)}>
+            <TuningOptions tuning={tuning} onChange={setTuning}/>
+        </OptionsDrawer>
         <Box sx={{
             p: 2,
             display: 'grid',
