@@ -22,8 +22,14 @@ export default function HarmonicLevels({levels, onChange}) {
 
     return <Accordion disableGutters elevation={0} square
                       sx={{border: 1, borderColor: 'divider', borderRadius: 1, '&:before': {display: 'none'}}}>
-        <AccordionSummary expandIcon={<ExpandIcon/>} sx={{minHeight: 40, '& .MuiAccordionSummary-content': {my: 0.5}}}>
-            <Typography variant="body2">Harmonic levels</Typography>
+        <AccordionSummary expandIcon={<ExpandIcon/>}
+                          sx={{
+                              minHeight: 30,
+                              px: 1.5,
+                              '&.Mui-expanded': {minHeight: 30},
+                              '& .MuiAccordionSummary-content': {my: 0, '&.Mui-expanded': {my: 0}},
+                          }}>
+            <Typography variant="caption" sx={{lineHeight: '30px'}}>Harmonic levels</Typography>
         </AccordionSummary>
         <AccordionDetails sx={{pt: 0, px: 1}}>
             {/* nine 24px columns fit the 300px side column; more would scroll sideways */}

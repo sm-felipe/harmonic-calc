@@ -213,6 +213,7 @@ export const CUSTOM_LEVEL_PRESETS = [
     {id: 'linear', label: 'Linear', levels: [0, -3, -6, -9, -12, -15, -18, -21, -24]},
     {id: 'equal', label: 'Equal', levels: [0, 0, 0, 0, 0, 0, 0, 0, 0]},
     {id: 'odd', label: 'Odd only', levels: [0, CUTOFF_DB, -6, CUTOFF_DB, -12, CUTOFF_DB, -18, CUTOFF_DB, -24]},
+    {id: 'fundamental-even', label: 'Fundamental + even', levels: [0, -3, CUTOFF_DB, -9, CUTOFF_DB, -15, CUTOFF_DB, -21, CUTOFF_DB]},
     {id: 'fundamental', label: 'Fundamental', levels: [0, CUTOFF_DB, CUTOFF_DB, CUTOFF_DB, CUTOFF_DB, CUTOFF_DB, CUTOFF_DB, CUTOFF_DB, CUTOFF_DB]},
 ];
 

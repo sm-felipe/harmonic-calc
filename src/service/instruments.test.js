@@ -1,4 +1,4 @@
-import {audiblePartials, CUTOFF_DB, defaultInstrument, findInstrument, instruments} from './instruments';
+import {audiblePartials, CUSTOM_LEVEL_PRESETS, CUTOFF_DB, defaultInstrument, findInstrument, instruments} from './instruments';
 
 const A4 = 440;
 const Bb1 = 58.27;
@@ -112,4 +112,11 @@ test('bowed double bass on its low E carries the note in the 2nd-3rd harmonics',
     let number = loudest(levels('double-bass', E1)).harmonicNumber;
     expect(number).toBeGreaterThanOrEqual(2);
     expect(number).toBeLessThanOrEqual(4);
+});
+
+test('custom level presets cover nine harmonics; "fundamental + even" keeps 1, 2, 4, 6, 8', () => {
+    expect(CUSTOM_LEVEL_PRESETS.every((preset) => preset.levels.length === 9)).toBe(true);
+    let preset = CUSTOM_LEVEL_PRESETS.find((candidate) => candidate.id === 'fundamental-even');
+    let numbers = audiblePartials(defaultInstrument, A4, CUTOFF_DB, preset.levels).map((partial) => partial.harmonicNumber);
+    expect(numbers).toEqual([1, 2, 4, 6, 8]);
 });
