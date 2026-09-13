@@ -27,19 +27,6 @@ export default function InstrumentGroup({index, group, noteNames, canRemove, onC
                     </Button>
                 )}
             </Stack>
-            <TextField select
-                       label="Instrument"
-                       value={group.instrumentId}
-                       onChange={(event) => onChange({...group, instrumentId: event.target.value})}
-                       helperText={instrument.description}>
-                {instruments.map((option) => (
-                    <MenuItem key={option.id} value={option.id}>{option.label}</MenuItem>
-                ))}
-            </TextField>
-            {instrument.customizable && (
-                <HarmonicLevels levels={group.harmonicLevels || instrument.defaultLevels}
-                                onChange={(harmonicLevels) => onChange({...group, harmonicLevels})}/>
-            )}
             <Autocomplete multiple
                           autoHighlight
                           disableCloseOnSelect
@@ -58,6 +45,19 @@ export default function InstrumentGroup({index, group, noteNames, canRemove, onC
                                          label="Notes"
                                          placeholder="Type a note, e.g. A4"/>
                           )}/>
+            <TextField select
+                       label="Instrument"
+                       value={group.instrumentId}
+                       onChange={(event) => onChange({...group, instrumentId: event.target.value})}
+                       helperText={instrument.description}>
+                {instruments.map((option) => (
+                    <MenuItem key={option.id} value={option.id}>{option.label}</MenuItem>
+                ))}
+            </TextField>
+            {instrument.customizable && (
+                <HarmonicLevels levels={group.harmonicLevels || instrument.defaultLevels}
+                                onChange={(harmonicLevels) => onChange({...group, harmonicLevels})}/>
+            )}
         </Stack>
     </Paper>;
 }
