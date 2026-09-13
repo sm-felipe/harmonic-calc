@@ -14,7 +14,7 @@ export function convertToScartData(harmonicMatrix) {
     for (let harmonicRow of harmonicMatrix) {
         const data = [];
 
-        let rootNoteName = harmonicRow.note;
+        let rootNoteName = harmonicRow.noteName;
 
         for (let frequencyInstance of harmonicRow.harmonics) {
             let frequencyNumber = frequencyInstance.frequency;

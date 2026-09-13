@@ -9,7 +9,7 @@ export function convertToChartData(harmonicMatrix) {
 }
 
 function addNoteHarmonics(harmonicRow, convertedMatrix) {
-    let rootNoteName = harmonicRow.note;
+    let rootNoteName = harmonicRow.noteName;
 
     for (let frequencyInstance of harmonicRow.harmonics) {
 

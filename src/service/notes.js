@@ -1,19 +1,40 @@
-export const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-export const OCTAVES = 11; // C0 .. E10 (125 notes)
+// Notes are identified by a pitch index: 0 = C0, 1 = C#0/Db0, ... 124 = E10.
+// How a pitch is spelled (D# or Eb) depends on the key and the temperament,
+// see spelling.js; how it is tuned depends on the temperament, see
+// temperaments.js. This module only knows about the indices themselves.
+
 export const NOTE_COUNT = 125;
 
-// Note names in pitch order, C0, C#0, ... E10; the same in every tuning.
-export const noteNames = Array.from({length: NOTE_COUNT},
-    (_, index) => NOTE_NAMES[index % 12] + Math.floor(index / 12));
+export const pitchIndices = Array.from({length: NOTE_COUNT}, (_, index) => index);
 
-// "C#4" -> 4
-export function octaveOf(note) {
-    return Number(note.replace(/^[A-G]#?/, ''));
+export function octaveOf(index) {
+    return Math.floor(index / 12);
 }
 
-// "C#4" -> 1 (chromatic degree, C = 0)
-export function degreeOf(note) {
-    return NOTE_NAMES.indexOf(note.replace(/\d+$/, ''));
+export function degreeOf(index) {
+    return index % 12;
+}
+
+const LETTER_DEGREES = {C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11};
+
+/**
+ * Pitch index of a note written as letter, accidentals and octave: "C#4",
+ * "Eb3", "B#3" (= C4), "Cb4" (= B3). Accepts # / b / ♯ / ♭ and any case.
+ * Returns undefined when the text is not a note.
+ */
+export function indexOfNote(text) {
+    let match = /^([A-Ga-g])([#♯b♭]*)(\d+)$/.exec(text.trim());
+    if (!match) {
+        return undefined;
+    }
+    let [, letter, accidentals, octave] = match;
+    let degree = LETTER_DEGREES[letter.toUpperCase()];
+    let shift = 0;
+    for (let mark of accidentals) {
+        shift += (mark === '#' || mark === '♯') ? 1 : -1;
+    }
+    let index = Number(octave) * 12 + degree + shift;
+    return index >= 0 && index < NOTE_COUNT ? index : undefined;
 }
 
 // Landmarks shown next to the octave headers in the note picker, to help

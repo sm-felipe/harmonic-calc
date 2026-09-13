@@ -3,12 +3,14 @@ import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import {findTemperament, referencePitches, temperaments, tonicOptions} from "../service/temperaments";
+import {accidentalOptions, findTemperament, referencePitches, temperaments} from "../service/temperaments";
+import {keys} from "../service/spelling";
 
-// Tuning system, its reference note (when the system has one) and the
-// pitch of A4. Lives in the options drawer.
+// Tuning system, key, pitch of A4 and, in equal temperament only, how
+// accidentals are spelled. Lives in the options drawer.
 export default function TuningOptions({tuning, onChange}) {
     let temperament = findTemperament(tuning.temperamentId);
+    let accidentals = accidentalOptions.find((option) => option.id === tuning.accidentals) || accidentalOptions[0];
 
     return <Stack spacing={2}>
         <Typography variant="overline" sx={{lineHeight: 1.5, color: 'text.secondary'}}>Tuning</Typography>
@@ -24,15 +26,29 @@ export default function TuningOptions({tuning, onChange}) {
                 </MenuItem>
             ))}
         </TextField>
+        <TextField select
+                   label="Key"
+                   value={tuning.keyId}
+                   onChange={(event) => onChange({...tuning, keyId: event.target.value})}
+                   helperText={temperament.retunesByKey
+                       ? 'Sets the tonic the ratios are built from, and how notes are spelled.'
+                       : 'In equal temperament the key only decides how notes are spelled.'}>
+            {keys.map((key) => (
+                <MenuItem key={key.id} value={key.id}>{key.label}</MenuItem>
+            ))}
+        </TextField>
         <Stack direction="row" spacing={2}>
-            {temperament.needsTonic && (
+            {!temperament.retunesByKey && (
                 <TextField select
-                           label="Reference note"
-                           value={tuning.tonic}
-                           onChange={(event) => onChange({...tuning, tonic: event.target.value})}
-                           sx={{flex: 1}}>
-                    {tonicOptions.map((note) => (
-                        <MenuItem key={note} value={note}>{note}</MenuItem>
+                           label="Accidentals"
+                           value={accidentals.id}
+                           onChange={(event) => onChange({...tuning, accidentals: event.target.value})}
+                           sx={{flex: 1}}
+                           slotProps={{select: {renderValue: (id) => accidentalOptions.find((option) => option.id === id).label}}}>
+                    {accidentalOptions.map((option) => (
+                        <MenuItem key={option.id} value={option.id} sx={describedOption}>
+                            <ListItemText primary={option.label} secondary={option.description}/>
+                        </MenuItem>
                     ))}
                 </TextField>
             )}

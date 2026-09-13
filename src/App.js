@@ -1,5 +1,4 @@
 import './App.css';
-import {noteNames} from './service/notes';
 import {useMemo, useState} from "react";
 import HarmonicTable from "./components/HarmonicTable";
 import {calculateHarmonicMatrix} from "./service/HarmonicMatrix";
@@ -9,13 +8,11 @@ import InstrumentGroup from "./components/InstrumentGroup";
 import TopBar from "./components/TopBar";
 import OptionsDrawer from "./components/OptionsDrawer";
 import TuningOptions from "./components/TuningOptions";
-import {buildNoteFrequencyMap, defaultTuning} from "./service/temperaments";
+import {buildTuningContext, defaultTuning} from "./service/temperaments";
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import {defaultInstrument, findInstrument} from "./service/instruments";
-
-const noteOptions = noteNames;
 
 //TODO plot das ondas
 //TODO error bars https://react-plot.zakodium.com/series/barSeries#3-errorbars
@@ -33,15 +30,15 @@ function App() {
     let [menuOpen, setMenuOpen] = useState(false);
     let [tuning, setTuning] = useState(defaultTuning);
 
-    // the frequency of every note in the chosen temperament; changing it
-    // re-tunes fundamentals, nearest-note matches and the player alike
-    let notesMap = useMemo(() => buildNoteFrequencyMap(tuning), [tuning]);
+    // frequency and name of every pitch in the chosen tuning; changing it
+    // re-tunes and re-spells fundamentals, nearest-note matches and the player
+    let tuningContext = useMemo(() => buildTuningContext(tuning), [tuning]);
 
     // memoised so the player only restarts when the sound actually changes
     let harmonicMatrix = useMemo(
         () => groups.flatMap((group) =>
-            calculateHarmonicMatrix(group.notes, findInstrument(group.instrumentId), notesMap)),
-        [groups, notesMap]);
+            calculateHarmonicMatrix(group.notes, findInstrument(group.instrumentId), tuningContext)),
+        [groups, tuningContext]);
 
     function updateGroup(updated) {
         setGroups(groups.map((group) => group.id === updated.id ? updated : group));
@@ -78,7 +75,7 @@ function App() {
                     <InstrumentGroup key={group.id}
                                      index={index}
                                      group={group}
-                                     noteOptions={noteOptions}
+                                     noteNames={tuningContext.names}
                                      canRemove={groups.length > 1}
                                      onChange={updateGroup}
                                      onRemove={() => removeGroup(group.id)}/>

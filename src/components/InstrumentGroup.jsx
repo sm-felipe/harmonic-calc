@@ -1,4 +1,4 @@
-import Autocomplete from '@mui/material/Autocomplete';
+import Autocomplete, {createFilterOptions} from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
@@ -6,11 +6,12 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import {findInstrument, instruments} from "../service/instruments";
-import {octaveHints, octaveOf} from "../service/notes";
+import {octaveHints, octaveOf, pitchIndices} from "../service/notes";
+import {searchNamesOf} from "../service/spelling";
 
 // One instrument and the notes it plays. Several groups can be combined so
 // that, say, a bassoon holds the bass while voices sing the upper parts.
-export default function InstrumentGroup({index, group, noteOptions, canRemove, onChange, onRemove}) {
+export default function InstrumentGroup({index, group, noteNames, canRemove, onChange, onRemove}) {
     let instrument = findInstrument(group.instrumentId);
     let instrumentLabel = `Instrument ${index + 1}`;
 
@@ -38,12 +39,14 @@ export default function InstrumentGroup({index, group, noteOptions, canRemove, o
                           autoHighlight
                           disableCloseOnSelect
                           limitTags={8}
-                          options={noteOptions}
+                          options={pitchIndices}
+                          getOptionLabel={(note) => noteNames[note]}
+                          filterOptions={filterByAnySpelling}
                           groupBy={(note) => octaveOf(note)}
                           renderGroup={renderOctaveGroup}
                           slotProps={{listbox: {sx: compactNoteList}}}
                           value={group.notes}
-                          onChange={(event, notes) => onChange({...group, notes: sortByPitch(notes, noteOptions)})}
+                          onChange={(event, notes) => onChange({...group, notes: sortByPitch(notes)})}
                           renderInput={(params) => (
                               <TextField {...params}
                                          label="Notes"
@@ -114,7 +117,12 @@ const compactNoteList = {
     },
 };
 
+// typing "Eb4" or "D#4" finds the same pitch, whatever the current spelling
+const filterByAnySpelling = createFilterOptions({
+    stringify: (note) => searchNamesOf(note).join(' '),
+});
+
 // keep rows in pitch order, no matter the order the notes were picked in
-function sortByPitch(notes, noteOptions) {
-    return [...notes].sort((a, b) => noteOptions.indexOf(a) - noteOptions.indexOf(b));
+function sortByPitch(notes) {
+    return [...notes].sort((a, b) => a - b);
 }

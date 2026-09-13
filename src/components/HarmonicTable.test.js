@@ -3,6 +3,7 @@ import HarmonicTable from './HarmonicTable';
 import {calculateHarmonicMatrix} from '../service/HarmonicMatrix';
 import {findInstrument} from '../service/instruments';
 import {tuningColor} from '../service/tuning';
+import {indexOfNote} from '../service/notes';
 import {loudnessColor} from '../service/loudness';
 
 test('shows a hint when no note is selected', () => {
@@ -12,7 +13,7 @@ test('shows a hint when no note is selected', () => {
 });
 
 test('cells align the partial and nearest-note frequencies and colour the partial by cents', () => {
-    let matrix = calculateHarmonicMatrix(['A3'], findInstrument('hypothetical'));
+    let matrix = calculateHarmonicMatrix([indexOfNote('A3')], findInstrument('hypothetical'));
     render(<HarmonicTable harmonicMatrix={matrix}/>);
 
     let row = screen.getAllByRole('row')[1];
@@ -36,7 +37,7 @@ test('cells align the partial and nearest-note frequencies and colour the partia
 });
 
 test('leaves empty cells for partials below the cutoff', () => {
-    let matrix = calculateHarmonicMatrix(['A2'], findInstrument('clarinet'));
+    let matrix = calculateHarmonicMatrix([indexOfNote('A2')], findInstrument('clarinet'));
     render(<HarmonicTable harmonicMatrix={matrix}/>);
     let cells = within(screen.getAllByRole('row')[1]).getAllByRole('cell');
     expect(cells[11]).toBeEmptyDOMElement();

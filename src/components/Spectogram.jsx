@@ -62,7 +62,7 @@ export function Spectogram({harmonicMatrix}) {
                     <Tooltip/>
                     <Legend/>
                     {harmonicMatrix.map((harmonicRow) => {
-                            return <Bar key={harmonicRow.note} dataKey={harmonicRow.note} stackId="a" fill={randomColor()}/>
+                            return <Bar key={harmonicRow.noteName} dataKey={harmonicRow.noteName} stackId="a" fill={randomColor()}/>
                         }
                     )}
                 </BarChart>

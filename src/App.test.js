@@ -54,9 +54,10 @@ test('the hamburger menu opens and closes the options drawer', async () => {
     fireEvent.click(screen.getByRole('button', {name: /open menu/i}));
     expect(screen.getByRole('heading', {name: 'Options'})).toBeInTheDocument();
     expect(screen.getByLabelText(/temperament/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^key$/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/A4 \(Hz\)/i)).toBeInTheDocument();
-    // equal temperament has no reference note
-    expect(screen.queryByLabelText(/reference note/i)).not.toBeInTheDocument();
+    // equal temperament lets you force sharps or flats
+    expect(screen.getByLabelText(/accidentals/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', {name: /close menu/i}));
     await waitForElementToBeRemoved(() => screen.queryByRole('heading', {name: 'Options'}));
@@ -87,14 +88,37 @@ test('changing the temperament re-tunes notes already on screen', () => {
     fireEvent.click(screen.getByRole('button', {name: /open menu/i}));
     fireEvent.mouseDown(screen.getByLabelText(/temperament/i));
     fireEvent.click(screen.getByRole('option', {name: /just intonation/i}));
-    expect(screen.getByLabelText(/reference note/i)).toBeInTheDocument();
+    // unequal temperaments decide the spelling themselves
+    expect(screen.queryByLabelText(/accidentals/i)).not.toBeInTheDocument();
 
-    fireEvent.mouseDown(screen.getByLabelText(/reference note/i));
-    fireEvent.click(screen.getByRole('option', {name: 'A'}));
+    fireEvent.mouseDown(screen.getByLabelText(/^key$/i));
+    fireEvent.click(screen.getByRole('option', {name: /^A major/}));
     // with A as the tonic, the 5th harmonic of A3 is exactly C#6
     expect(within(fifthHarmonic()).getByText('0¢')).toBeInTheDocument();
 
     fireEvent.mouseDown(screen.getByLabelText(/A4 \(Hz\)/i));
     fireEvent.click(screen.getByRole('option', {name: /^415 Hz/}));
     expect(within(screen.getAllByRole('row', {hidden: true})[1]).getAllByText('207.50').length).toBeGreaterThan(0);
+});
+
+test('spelling follows the key, and a note can be found by either spelling', () => {
+    render(<App/>);
+    let input = screen.getByLabelText(/^notes$/i);
+    // around C the chain spells the minor third as Eb; typing D# finds it too
+    fireEvent.mouseDown(input);
+    fireEvent.change(input, {target: {value: 'D#4'}});
+    fireEvent.click(screen.getByRole('option', {name: 'Eb4'}));
+    fireEvent.keyDown(input, {key: 'Escape'});
+    expect(within(screen.getAllByRole('row')[1]).getByText('Eb4')).toBeInTheDocument();
+
+    // in E major the same pitch is D#
+    fireEvent.click(screen.getByRole('button', {name: /open menu/i}));
+    fireEvent.mouseDown(screen.getByLabelText(/^key$/i));
+    fireEvent.click(screen.getByRole('option', {name: /^E major/}));
+    expect(within(screen.getAllByRole('row', {hidden: true})[1]).getByText('D#4')).toBeInTheDocument();
+
+    // forcing flats in equal temperament overrides the key
+    fireEvent.mouseDown(screen.getByLabelText(/accidentals/i));
+    fireEvent.click(screen.getByRole('option', {name: /^Flats/}));
+    expect(within(screen.getAllByRole('row', {hidden: true})[1]).getByText('Eb4')).toBeInTheDocument();
 });
