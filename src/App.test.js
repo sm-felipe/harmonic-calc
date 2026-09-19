@@ -47,7 +47,7 @@ test('an example fills the selectors and the tuning in one click', () => {
     expect(rows).toHaveLength(3);
     expect(within(rows[0]).getAllByText(/Singing voice, vowel "a"/).length).toBeGreaterThan(0);
     // just intonation from A: the 5th partial of A3 is exactly C#6
-    expect(within(within(rows[0]).getAllByRole('cell')[4]).getByText('0¢')).toBeInTheDocument();
+    expect(within(within(rows[0]).getAllByRole('cell')[5]).getByText('0¢')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', {name: /open menu/i}));
     expect(screen.getByLabelText(/temperament/i)).toHaveTextContent(/just intonation/i);
@@ -61,8 +61,8 @@ test('the two-group example creates two instrument boxes', () => {
     expect(screen.getAllByRole('button', {name: /remove instrument/i})).toHaveLength(2);
     // the custom group's 2nd harmonic is off, the clarinet's is merely weak
     let rows = screen.getAllByRole('row').slice(1);
-    expect(within(rows[0]).getAllByRole('cell')[1]).toBeEmptyDOMElement();
-    expect(within(rows[1]).getAllByRole('cell')[1]).not.toBeEmptyDOMElement();
+    expect(within(rows[0]).getAllByRole('cell')[2]).toBeEmptyDOMElement();
+    expect(within(rows[1]).getAllByRole('cell')[2]).not.toBeEmptyDOMElement();
 });
 
 test('add instrument creates a paired instrument/notes group that can be removed', () => {
@@ -144,7 +144,7 @@ test('changing the temperament re-tunes notes already on screen', () => {
     render(<App/>);
     pickNote(screen.getByLabelText(/^notes$/i), 'A3');
     // the open drawer hides the page from the accessibility tree, hence `hidden`
-    let fifthHarmonic = () => within(screen.getAllByRole('row', {hidden: true})[1]).getAllByRole('cell', {hidden: true})[4];
+    let fifthHarmonic = () => within(screen.getAllByRole('row', {hidden: true})[1]).getAllByRole('cell', {hidden: true})[5];
     expect(within(fifthHarmonic()).getByText('−14¢')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', {name: /open menu/i}));
@@ -188,7 +188,7 @@ test('spelling follows the key, and a note can be found by either spelling', () 
 test('the custom instrument has collapsed harmonic level sliders that drive the table', () => {
     render(<App/>);
     pickNote(screen.getByLabelText(/^notes$/i), 'A4');
-    let secondHarmonic = () => within(screen.getAllByRole('row')[1]).getAllByRole('cell')[1];
+    let secondHarmonic = () => within(screen.getAllByRole('row')[1]).getAllByRole('cell')[2];
     expect(within(secondHarmonic()).getByText('-3 dB')).toBeInTheDocument();
 
     // collapsed by default: the sliders are not visible until the section is expanded
@@ -206,7 +206,7 @@ test('the custom instrument has collapsed harmonic level sliders that drive the 
 
     fireEvent.click(screen.getByRole('button', {name: /^odd only$/i}));
     expect(secondHarmonic()).toBeEmptyDOMElement();
-    expect(within(within(screen.getAllByRole('row')[1]).getAllByRole('cell')[2]).getByText('-6 dB')).toBeInTheDocument();
+    expect(within(within(screen.getAllByRole('row')[1]).getAllByRole('cell')[3]).getByText('-6 dB')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', {name: /^linear$/i}));
     expect(within(secondHarmonic()).getByText('-3 dB')).toBeInTheDocument();
 });
@@ -304,7 +304,9 @@ test('"Clear all" brings the quick start back', () => {
 test('"Snap partials to notes" puts every partial on 0 cents and lands in the link', () => {
     render(<App/>);
     pickNote(screen.getByLabelText(/^notes$/i), 'A3');
-    let cellsText = () => within(screen.getAllByRole('row', {hidden: true})[1]).getAllByRole('cell', {hidden: true}).map((cell) => cell.textContent);
+    // past the instrument column, which names the timbre rather than a partial
+    let cellsText = () => within(screen.getAllByRole('row', {hidden: true})[1])
+        .getAllByRole('cell', {hidden: true}).slice(1).map((cell) => cell.textContent);
     expect(cellsText().some((text) => /−14¢/.test(text))).toBe(true);
 
     fireEvent.click(screen.getByRole('button', {name: /open menu/i}));

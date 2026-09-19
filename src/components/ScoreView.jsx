@@ -42,6 +42,7 @@ export default function ScoreView({score, sounding = [], following = false, cont
     let [pageCount, setPageCount] = useState(score.pageCount);
     let [markup, setMarkup] = useState('');
     let host = useRef(null);
+    let lastBreaking = useRef(null);
 
     // Lay the piece out to the width there is, then draw the page. Both belong
     // to one effect because the page count is only known after the re-layout.
@@ -70,7 +71,17 @@ export default function ScoreView({score, sounding = [], following = false, cont
                 pageHeight: PAGE_HEIGHT_UNITS,
                 adjustPageHeight: true,
             });
-        toolkit.redoLayout();
+        // Twice when the line breaking changes, because Verovio holds on to the
+        // layout it has already drawn: the first pass after switching between
+        // pages and one line still reports the old one, and only a second picks
+        // the new setting up. Merely resizing keeps to one pass, which is the
+        // expensive part of drawing a long score.
+        let passes = lastBreaking.current === continuous ? 1 : 2;
+        for (let pass = 0; pass < passes; pass++) {
+            toolkit.redoLayout();
+        }
+        lastBreaking.current = continuous;
+
         let count = toolkit.getPageCount();
         setPageCount(count);
         setMarkup(toolkit.renderToSVG(Math.min(page, count), {}));

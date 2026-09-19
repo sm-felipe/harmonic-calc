@@ -139,6 +139,13 @@ function App() {
 
     let harmonicMatrix = score ? scoreMatrix : manualMatrix;
 
+    // The fullest chord in the piece decides how tall the table is, so it stops
+    // growing and shrinking a row at a time as voices enter and drop out, which
+    // shunts the spectrum below it up and down.
+    let tableRows = useMemo(
+        () => score ? score.changes.reduce((most, change) => Math.max(most, change.notes.length), 0) : 0,
+        [score]);
+
     function updateGroup(updated) {
         setGroups(groups.map((group) => group.id === updated.id ? updated : group));
     }
@@ -208,16 +215,16 @@ function App() {
                 <ScoreLoader score={score} onLoad={openScore} onClear={closeScore}/>
                 {score && (
                     <Box sx={{mt: 2}}>
-                        {/* the toggle is the section heading: lanes to find your way
-                            around the piece, the score to read what is written, and
-                            the same score on one line when the parts should line up
-                            the way the lanes do */}
+                        {/* the toggle is the section heading: the roll to find your
+                            way around the piece, the score to read what is written,
+                            and the same score on one line when the parts should line
+                            up the way the roll does */}
                         <ToggleButtonGroup exclusive
                                            size="small"
                                            value={scoreView}
                                            onChange={(event, chosen) => chosen && setScoreView(chosen)}
                                            sx={{mb: 1}}>
-                            <ToggleButton value="lanes">Parts</ToggleButton>
+                            <ToggleButton value="lanes">Piano roll</ToggleButton>
                             <ToggleButton value="score">Score</ToggleButton>
                             <ToggleButton value="continuous">One line</ToggleButton>
                         </ToggleButtonGroup>
@@ -283,7 +290,7 @@ function App() {
                         : <QuickStart onPick={pickExample} busyId={exampleBusy} error={exampleError}/>)
                     : <>
                         <Box sx={{order: {xs: 2, md: 1}}}>
-                            <HarmonicTable harmonicMatrix={harmonicMatrix}/>
+                            <HarmonicTable harmonicMatrix={harmonicMatrix} minRows={tableRows}/>
                         </Box>
                         <Box sx={{order: {xs: 1, md: 2}, mb: {xs: 2, md: 0}}}>
                             <Spectogram2 harmonicMatrix={harmonicMatrix}/>

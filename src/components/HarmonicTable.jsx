@@ -13,11 +13,18 @@ import scrollShadows from "./scrollShadows";
 import {formatCents, tuningColor} from "../service/tuning";
 import {loudnessColor} from "../service/loudness";
 
-export default function HarmonicTable({harmonicMatrix}) {
+/**
+ * `minRows` keeps the table at a settled height when the notes under it come
+ * and go: a piece that is sometimes in three parts and sometimes in four would
+ * otherwise grow and shrink a row at a time, and everything below it — the
+ * spectrum above all — would jump up and down with every chord.
+ */
+export default function HarmonicTable({harmonicMatrix, minRows = 0}) {
     // one column per harmonic number up to the highest audible one; inaudible
     // partials (below the cutoff) leave their cell empty
     let columnCount = Math.max(9, ...harmonicMatrix.map((row) => lastHarmonicNumber(row)));
     let headers = Array.from({length: columnCount}, (_, index) => columnLabel(index));
+    let padding = Math.max(0, minRows - harmonicMatrix.length);
 
     return <Box sx={{mb: 2}}>
         <Typography variant="overline" component="h2"
@@ -29,12 +36,10 @@ export default function HarmonicTable({harmonicMatrix}) {
             <Table size="small" sx={{width: 'max-content', minWidth: '100%', whiteSpace: 'nowrap'}}>
                 <TableHead>
                     <TableRow>
+                        <TableCell sx={instrumentColumn}>Instrument</TableCell>
                         {headers.map((header, column) => (
                             <Tooltip key={header} title={columnHint(column)} placement="top">
-                                <TableCell align={column === 0 ? 'left' : 'right'}
-                                           sx={column === 0 ? stickyColumn : undefined}>
-                                    {header}
-                                </TableCell>
+                                <TableCell align={column === 0 ? 'left' : 'right'}>{header}</TableCell>
                             </Tooltip>
                         ))}
                     </TableRow>
@@ -44,30 +49,44 @@ export default function HarmonicTable({harmonicMatrix}) {
                         let byHarmonicNumber = new Map(
                             harmonicRow.harmonics.map((frequency) => [frequency.harmonicNumber, frequency]));
                         return <TableRow key={rowIndex + ':' + harmonicRow.note} hover>
+                            {/* its own column rather than a fourth line under the
+                                fundamental, which made every row a line taller */}
+                            <Tooltip title={harmonicRow.instrument.label} placement="top" enterDelay={300}>
+                                <TableCell sx={{...instrumentColumn, verticalAlign: 'top'}}>
+                                    {/* the row is three lines tall anyway, so the name
+                                        wraps into that rather than being cut short */}
+                                    <Typography variant="caption" color="text.secondary" sx={instrumentName}>
+                                        {harmonicRow.instrument.label}
+                                    </Typography>
+                                </TableCell>
+                            </Tooltip>
                             {headers.map((header, column) => {
                                 let frequency = byHarmonicNumber.get(column + 1);
-                                return <TableCell key={header}
-                                                  align="right"
-                                                  sx={{verticalAlign: 'top', ...(column === 0 ? stickyColumn : {})}}>
+                                return <TableCell key={header} align="right" sx={{verticalAlign: 'top'}}>
                                     {frequency && <PartialCell frequency={frequency} fundamental={harmonicRow.harmonics[0]}/>}
-                                    {column === 0 && (
-                                        <Typography variant="caption" color="text.secondary" noWrap
-                                                    sx={{display: 'block', textAlign: 'left', mt: 0.5}}>
-                                            {harmonicRow.instrument.label}
-                                        </Typography>
-                                    )}
                                 </TableCell>;
                             })}
                         </TableRow>;
                     })}
                     {harmonicMatrix.length === 0 && (
                         <TableRow>
-                            <TableCell colSpan={columnCount} align="center"
+                            <TableCell colSpan={columnCount + 1} align="center"
                                        sx={{color: 'text.secondary', py: 3}}>
                                 Pick one or more notes to see their harmonics
                             </TableCell>
                         </TableRow>
                     )}
+                    {/* blank rows built the same way as real ones, so the height
+                        they hold is exactly the height a note would take */}
+                    {Array.from({length: padding}, (_, index) => (
+                        <TableRow key={`empty-${index}`} aria-hidden="true">
+                            <TableCell sx={{...instrumentColumn, verticalAlign: 'top'}}>
+                                <Typography variant="caption" sx={{display: 'block'}}>&nbsp;</Typography>
+                            </TableCell>
+                            <TableCell sx={{verticalAlign: 'top'}}><EmptyCell/></TableCell>
+                            {headers.slice(1).map((header) => <TableCell key={header}/>)}
+                        </TableRow>
+                    ))}
                 </TableBody>
             </Table>
         </TableContainer>
@@ -122,14 +141,37 @@ const numeric = {
     textAlign: 'right',
 };
 
-const stickyColumn = {
+// The instrument stays in view as the harmonics scroll past, held to a width
+// so it cannot crowd them out; longer names than three lines will hold are cut,
+// and the tooltip carries the whole of it either way.
+const instrumentColumn = {
     position: 'sticky',
     left: 0,
     zIndex: 1,
     bgcolor: 'background.paper',
     borderRight: 1,
     borderColor: 'divider',
+    maxWidth: 132,
+    minWidth: 132,
 };
+
+const instrumentName = {
+    display: '-webkit-box',
+    WebkitBoxOrient: 'vertical',
+    WebkitLineClamp: 3,
+    overflow: 'hidden',
+    whiteSpace: 'normal',
+    lineHeight: 1.35,
+};
+
+// a partial cell's worth of nothing, to hold a blank row open
+function EmptyCell() {
+    return <Box sx={{display: 'grid', gridTemplateColumns: 'auto max-content', columnGap: 0.75, alignItems: 'baseline'}}>
+        <Box component="span" sx={numeric}>&nbsp;</Box><span/>
+        <Box component="span" sx={numeric}>&nbsp;</Box><span/>
+        <Box component="span" sx={{...numeric, fontSize: '0.75rem'}}>&nbsp;</Box><span/>
+    </Box>;
+}
 
 function lastHarmonicNumber(row) {
     return row.harmonics.length ? row.harmonics[row.harmonics.length - 1].harmonicNumber : 0;
