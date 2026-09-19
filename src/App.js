@@ -188,9 +188,9 @@ function App() {
         setTuning(loaded.tuning);
     }
 
-    // Desktop: player above the selectors in a left column; table, spectrum
-    // and wave on the right. Phone: selectors first to invite interaction,
-    // then the player, the spectrum, the table and the wave.
+    // Desktop: player above the selectors in a left column; spectrum, table and
+    // wave on the right. Phone: selectors first to invite interaction, then the
+    // player and the same three.
     return <>
         <TopBar onMenuClick={() => setMenuOpen(true)}/>
         <OptionsDrawer open={menuOpen} onClose={() => setMenuOpen(false)}>
@@ -239,7 +239,8 @@ function App() {
                             : <ScoreView score={score}
                                          sounding={sounding}
                                          following={transport.playing}
-                                         continuous={scoreView === 'continuous'}/>}
+                                         continuous={scoreView === 'continuous'}
+                                         onSeek={transport.seek}/>}
                     </Box>
                 )}
             </Box>
@@ -289,11 +290,13 @@ function App() {
                         </Typography>
                         : <QuickStart onPick={pickExample} busyId={exampleBusy} error={exampleError}/>)
                     : <>
-                        <Box sx={{order: {xs: 2, md: 1}}}>
-                            <HarmonicTable harmonicMatrix={harmonicMatrix} minRows={tableRows}/>
-                        </Box>
-                        <Box sx={{order: {xs: 1, md: 2}, mb: {xs: 2, md: 0}}}>
+                        {/* the spectrum leads on every width: it is the picture of
+                            the sound, and the table is the detail behind it */}
+                        <Box sx={{order: 1, mb: 2}}>
                             <Spectogram2 harmonicMatrix={harmonicMatrix}/>
+                        </Box>
+                        <Box sx={{order: 2}}>
+                            <HarmonicTable harmonicMatrix={harmonicMatrix} minRows={tableRows}/>
                         </Box>
                         {display.showWave && (
                             <Box sx={{order: 3}}>

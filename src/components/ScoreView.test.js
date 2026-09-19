@@ -176,3 +176,53 @@ test('a score that fits needs no sliding, and the window is scrolled instead', (
     expect(scrolled).toHaveBeenCalled();
     expect(scroller.scrollLeft).toBeFalsy();
 });
+
+// --- clicking the score to move the playhead ------------------------------
+
+function boxAt(left, top) {
+    return {left, top, right: left + 10, bottom: top + 10, width: 10, height: 10};
+}
+
+test('clicking a note moves the playhead to where that note begins', () => {
+    let onSeek = jest.fn();
+    let {container} = render(<ScoreView score={scoreOf()} onSeek={onSeek}/>);
+
+    fireEvent.click(container.querySelector('#n3'));
+    expect(onSeek).toHaveBeenCalledWith(2000);
+
+    fireEvent.click(container.querySelector('#n1'));
+    expect(onSeek).toHaveBeenLastCalledWith(0);
+});
+
+test('clicking the head of a note counts as clicking the note', () => {
+    let onSeek = jest.fn();
+    let {container} = render(<ScoreView score={scoreOf()} onSeek={onSeek}/>);
+
+    fireEvent.click(container.querySelector('#n3 .notehead'));
+    expect(onSeek).toHaveBeenCalledWith(2000);
+});
+
+test('clicking beside the notes takes the nearest one, so a click never does nothing', () => {
+    let onSeek = jest.fn();
+    let {container} = render(<ScoreView score={scoreOf()} onSeek={onSeek}/>);
+
+    container.querySelector('#n1').getBoundingClientRect = () => boxAt(0, 0);
+    container.querySelector('#n2').getBoundingClientRect = () => boxAt(100, 0);
+    container.querySelector('#n2b').getBoundingClientRect = () => boxAt(200, 0);
+    container.querySelector('#n3').getBoundingClientRect = () => boxAt(300, 0);
+
+    // on the stave, closest to n2b
+    fireEvent.click(container.querySelector('svg'), {clientX: 195, clientY: 40});
+    expect(onSeek).toHaveBeenCalledWith(0);      // n2b is the tail of the note that began at 0
+
+    fireEvent.click(container.querySelector('svg'), {clientX: 290, clientY: 40});
+    expect(onSeek).toHaveBeenLastCalledWith(2000);
+});
+
+test('with nowhere to seek the score is not offered as clickable', () => {
+    let {container} = render(<ScoreView score={scoreOf()}/>);
+    expect(container.querySelectorAll('div')[2].style.cursor).toBe('default');
+
+    let {container: seekable} = render(<ScoreView score={scoreOf()} onSeek={jest.fn()}/>);
+    expect(seekable.querySelectorAll('div')[2].style.cursor).toBe('pointer');
+});

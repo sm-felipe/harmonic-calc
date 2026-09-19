@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
@@ -36,13 +36,43 @@ const UNBOUNDED_PAGE_UNITS = 60000;
 const FOLLOW_ANCHOR = 1 / 3;
 const SOUNDING_COLOUR = '#d32f2f';
 
-export default function ScoreView({score, sounding = [], following = false, continuous = false}) {
+export default function ScoreView({score, sounding = [], following = false, continuous = false, onSeek}) {
     let [containerRef, containerWidth] = useContainerWidth();
     let [page, setPage] = useState(1);
     let [pageCount, setPageCount] = useState(score.pageCount);
     let [markup, setMarkup] = useState('');
     let host = useRef(null);
     let lastBreaking = useRef(null);
+
+    // Where each drawn note begins. Unlike the piano roll, a score's horizontal
+    // distance is not time — bars are as wide as what is in them, and the line
+    // breaks — so moving the playhead means finding out which note was clicked
+    // rather than working a fraction out from the width.
+    let startOfNote = useMemo(() => {
+        let times = new Map();
+        for (let note of score.notes) {
+            for (let id of note.ids) {
+                times.set(id, note.startMs);
+            }
+        }
+        return times;
+    }, [score]);
+
+    function seekFrom(event) {
+        if (!onSeek) {
+            return;
+        }
+        let clicked = event.target.closest ? event.target.closest('g.note') : null;
+        let id = clicked && clicked.getAttribute('id');
+        if (!id || !startOfNote.has(id)) {
+            // between the notes, or on a stave: take the nearest note to the
+            // pointer, so a click never does nothing
+            id = nearestNote(host.current, event.clientX, event.clientY, startOfNote);
+        }
+        if (id !== null && startOfNote.has(id)) {
+            onSeek(startOfNote.get(id));
+        }
+    }
 
     // Lay the piece out to the width there is, then draw the page. Both belong
     // to one effect because the page count is only known after the re-layout.
@@ -137,7 +167,10 @@ export default function ScoreView({score, sounding = [], following = false, cont
                      fill: SOUNDING_COLOUR,
                  },
              }}>
-            <div ref={host} dangerouslySetInnerHTML={{__html: markup}}/>
+            <div ref={host}
+                 onClick={seekFrom}
+                 style={{cursor: onSeek ? 'pointer' : 'default'}}
+                 dangerouslySetInnerHTML={{__html: markup}}/>
         </Box>
         {pageCount > 1 && (
             <Stack direction="row" spacing={1} sx={{alignItems: 'center', mt: 1}}>
@@ -149,12 +182,42 @@ export default function ScoreView({score, sounding = [], following = false, cont
             </Stack>
         )}
         <Typography variant="caption" color="text.secondary" sx={{display: 'block', mt: 0.75}}>
-            The score as written, engraved from the file itself. Notes sounding at the playhead are red.
+            The score as written, engraved from the file itself. Notes sounding at the playhead are red, and
+            clicking a note moves the playhead to it.
             {continuous
                 ? ' Every part runs on one line, as the lanes do, and the score slides past as the piece plays.'
                 : ' The page turns itself to follow the music.'}
         </Typography>
     </Box>;
+}
+
+/**
+ * The drawn note closest to a point, by the distance to the middle of it, or
+ * null when the page holds none. A score has few hundred notes to a page, so
+ * measuring them all on a click is cheaper than keeping an index in step with
+ * every re-engraving.
+ */
+function nearestNote(root, clientX, clientY, known) {
+    if (!root) {
+        return null;
+    }
+    let closest = null;
+    let best = Infinity;
+    for (let element of root.querySelectorAll('g.note')) {
+        let id = element.getAttribute('id');
+        if (!known.has(id)) {
+            continue;
+        }
+        let box = element.getBoundingClientRect();
+        let dx = clientX - (box.left + box.width / 2);
+        let dy = clientY - (box.top + box.height / 2);
+        let distance = dx * dx + dy * dy;
+        if (distance < best) {
+            best = distance;
+            closest = id;
+        }
+    }
+    return closest;
 }
 
 /**
