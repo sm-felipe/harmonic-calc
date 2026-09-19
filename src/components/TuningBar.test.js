@@ -1,4 +1,4 @@
-import {fireEvent, render, screen} from '@testing-library/react';
+import {fireEvent, render, screen, within} from '@testing-library/react';
 import TuningBar from './TuningBar';
 import {defaultTuning} from '../service/temperaments';
 
@@ -55,4 +55,16 @@ test('snap already on can be turned off again', () => {
 
     fireEvent.click(screen.getByRole('button', {name: /snap/i}));
     expect(onChange).toHaveBeenCalledWith({...defaultTuning, snap: false});
+});
+
+test('snap on is filled rather than faintly washed, so it cannot be missed', () => {
+    let off = render(<TuningBar tuning={defaultTuning} onChange={jest.fn()}/>);
+    let on = render(<TuningBar tuning={{...defaultTuning, snap: true}} onChange={jest.fn()}/>);
+
+    let colourOf = (view) => getComputedStyle(
+        within(view.container).getByRole('button', {name: /snap/i})).backgroundColor;
+
+    expect(colourOf(on)).not.toBe(colourOf(off));
+    // the accent colour, not a grey
+    expect(colourOf(on)).toMatch(/rgb\(25, 118, 210\)|#1976d2/i);
 });

@@ -61,12 +61,29 @@ export default function TuningBar({tuning, onChange}) {
                           size="small"
                           selected={Boolean(tuning.snap)}
                           onChange={() => onChange({...tuning, snap: !tuning.snap})}
-                          sx={{px: 1.25, py: 0.5, textTransform: 'none', whiteSpace: 'nowrap'}}>
+                          sx={snapButton}>
                 Snap
             </ToggleButton>
         </Tooltip>
     </Stack>;
 }
+
+// Snap changes what every partial is, so it should be impossible to leave on
+// by accident: switched on it fills with the accent colour rather than taking
+// the faint grey wash a toggle button has by default.
+const snapButton = {
+    px: 1.25,
+    py: 0.5,
+    textTransform: 'none',
+    whiteSpace: 'nowrap',
+    '&.Mui-selected': {
+        bgcolor: 'primary.main',
+        color: 'primary.contrastText',
+        borderColor: 'primary.main',
+        fontWeight: 600,
+        '&:hover': {bgcolor: 'primary.dark'},
+    },
+};
 
 // wide enough for the longest short label, and no wider; tighter still on a
 // phone, where every pixel decides whether the bar takes two rows or three

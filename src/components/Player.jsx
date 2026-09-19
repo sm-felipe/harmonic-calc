@@ -1,5 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from "react";
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Slider from '@mui/material/Slider';
 import Snackbar from '@mui/material/Snackbar';
@@ -121,13 +122,16 @@ export default function Player({harmonicMatrix, transport = null, onVolumeChange
         }
     }
 
-    // The clock and the tuning take room a narrow window does not have, so the
-    // row wraps and the volume moves to a line of its own rather than shrinking
-    // to a stub.
+    // On a wide window everything sits on one line, the volume pushed to the
+    // right. A phone cannot hold it: the transport and the tuning together want
+    // more than 340 pixels whatever is trimmed. Rather than let it wrap where it
+    // falls — which lands on three lines as soon as a label grows, "Mean ¼" or
+    // "Play 1 note" being enough — the tuning is given a line of its own below,
+    // and the transport keeps the volume company above. Two lines, always.
     return <Stack direction="row" spacing={2} useFlexGap
                   sx={{alignItems: 'center', flexWrap: 'wrap', rowGap: 1, width: '100%'}}>
         <Tooltip title={hint}>
-            <span>
+            <Box component="span" sx={{order: {xs: 1, sm: 0}}}>
                 <Button variant="contained"
                         color={sounding ? 'error' : 'success'}
                         disabled={!sounding && !canPlay}
@@ -135,17 +139,28 @@ export default function Player({harmonicMatrix, transport = null, onVolumeChange
                         sx={{minWidth: 96, flexShrink: 0, whiteSpace: 'nowrap'}}>
                     {label}
                 </Button>
-            </span>
+            </Box>
         </Tooltip>
         {transport && (
             <Typography variant="body2" color="text.secondary" translate="no"
-                        sx={{fontVariantNumeric: 'tabular-nums', flexShrink: 0}}>
+                        sx={{fontVariantNumeric: 'tabular-nums', flexShrink: 0, order: {xs: 2, sm: 0}}}>
                 {clock(transport.positionMs)} / {clock(transport.durationMs)}
             </Typography>
         )}
-        {children}
+        {children && (
+            <Box sx={{order: {xs: 4, sm: 0}, flexBasis: {xs: '100%', sm: 'auto'}, flexShrink: 0}}>
+                {children}
+            </Box>
+        )}
         <Stack direction="row" spacing={1} useFlexGap
-               sx={{alignItems: 'center', flexGrow: 1, minWidth: {xs: 96, sm: 160}, maxWidth: 320, ml: 'auto'}}>
+               sx={{
+                   alignItems: 'center',
+                   flexGrow: 1,
+                   minWidth: {xs: 96, sm: 160},
+                   maxWidth: 320,
+                   ml: 'auto',
+                   order: {xs: 3, sm: 0},
+               }}>
             {/* on a phone the word costs a row of the bar; the slider keeps its
                 label for anyone not reading the screen */}
             <Typography variant="body2" color="text.secondary"
