@@ -11,18 +11,24 @@ import DisplayOptions from "./components/DisplayOptions";
 import References from "./components/References";
 import Waveform from "./components/Waveform";
 import QuickStart from "./components/QuickStart";
-import {loadExample} from "./service/examples";
+import {loadExample, readExampleScore} from "./service/examples";
 import {decodeState, encodeState} from "./service/urlState";
 import Divider from '@mui/material/Divider';
 import {buildTuningContext} from "./service/temperaments";
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 import {defaultInstrument, findInstrument} from "./service/instruments";
+import ScoreLoader from "./components/ScoreLoader";
+import ScoreLanes from "./components/ScoreLanes";
+import {changeIndexAt, groupsAt} from "./service/musicXml";
+import useScorePlayer from "./components/useScorePlayer";
 
 //TODO error bars https://react-plot.zakodium.com/series/barSeries#3-errorbars
 //TODO refactor: organizar classes e functions
-//TODO actually read MusicXML music sheets
+
+const NOTHING_SOUNDING = [];
 
 let nextGroupId = 1;
 
@@ -53,6 +59,15 @@ function App() {
     let [display, setDisplay] = useState(initial.display);
     let lastHistoryKey = useRef(historyKey(initial));
     let restoring = useRef(false);
+
+    // An opened score is session state, not part of the link: a piece cannot go
+    // in a query string, and the playhead moving would otherwise fill the
+    // browser's history. The hand-picked groups above carry on untouched.
+    let [score, setScore] = useState(null);
+    let [partChoices, setPartChoices] = useState({});   // partIndex -> instrument id
+    let [volume, setVolume] = useState(1);
+    let [exampleBusy, setExampleBusy] = useState(null);
+    let [exampleError, setExampleError] = useState(null);
 
     // Keep the address bar in sync so the current link reproduces the screen.
     // Structural changes push a history entry, so the browser's Back button
@@ -91,10 +106,34 @@ function App() {
     let tuningContext = useMemo(() => buildTuningContext(tuning), [tuning]);
 
     // memoised so the player only restarts when the sound actually changes
-    let harmonicMatrix = useMemo(
+    let manualMatrix = useMemo(
         () => groups.flatMap((group) =>
             calculateHarmonicMatrix(group.notes, findInstrument(group.instrumentId), tuningContext, group.harmonicLevels)),
         [groups, tuningContext]);
+
+    // what each part is heard and analysed as, the score's own guess unless a
+    // lane was changed
+    let scoreParts = useMemo(
+        () => score ? score.parts.map((part, index) => ({instrumentId: partChoices[index] || part.instrumentId})) : [],
+        [score, partChoices]);
+
+    let transport = useScorePlayer(score, {tuningContext, parts: scoreParts, volume});
+    let positionMs = transport.positionMs;
+
+    // The playhead moves every animation frame, but the sound only changes at
+    // the moments the score says it does. Keying off that index instead of the
+    // position keeps the table, the spectrum and the wave from being rebuilt
+    // sixty times a second for a chord that has not changed.
+    let changeIndex = score ? changeIndexAt(score, positionMs) : -1;
+    let sounding = score && changeIndex >= 0 ? score.changes[changeIndex].notes : NOTHING_SOUNDING;
+
+    let scoreMatrix = useMemo(
+        () => score ? groupsAt(score, positionMs, partChoices).flatMap((group) =>
+            calculateHarmonicMatrix(group.notes, findInstrument(group.instrumentId), tuningContext)) : [],
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [score, changeIndex, partChoices, tuningContext]);
+
+    let harmonicMatrix = score ? scoreMatrix : manualMatrix;
 
     function updateGroup(updated) {
         setGroups(groups.map((group) => group.id === updated.id ? updated : group));
@@ -108,7 +147,31 @@ function App() {
         setGroups([newGroup()]);
     }
 
-    function pickExample(example) {
+    function openScore(loaded) {
+        setScore(loaded);
+        setPartChoices({});
+    }
+
+    function closeScore() {
+        setScore(null);
+        setPartChoices({});
+    }
+
+    // An example is either a handful of notes or a whole score; the score has
+    // to be fetched and read, which takes a moment and can fail.
+    async function pickExample(example) {
+        if (example.scoreFile) {
+            setExampleBusy(example.id);
+            setExampleError(null);
+            try {
+                openScore(await readExampleScore(example));
+            } catch (failure) {
+                setExampleError(failure.message || 'That example could not be opened.');
+            } finally {
+                setExampleBusy(null);
+            }
+            return;
+        }
         let loaded = loadExample(example, newGroup);
         setGroups(loaded.groups);
         setTuning(loaded.tuning);
@@ -131,19 +194,37 @@ function App() {
             display: 'grid',
             gap: 2,
             gridTemplateColumns: {xs: 'minmax(0, 1fr)', md: '300px minmax(0, 1fr)'},
-            gridTemplateRows: {md: 'auto 1fr'},
+            gridTemplateRows: {md: 'auto auto 1fr'},
             gridTemplateAreas: {
-                xs: '"selectors" "player" "results"',
-                md: '"player results" "selectors results"',
+                xs: '"score" "selectors" "player" "results"',
+                md: '"score score" "player results" "selectors results"',
             },
         }}>
-            <Box sx={{gridArea: 'player', pr: {md: 1}}}>
-                <Player harmonicMatrix={harmonicMatrix}/>
+            <Box sx={{gridArea: 'score', minWidth: 0}}>
+                <ScoreLoader score={score} onLoad={openScore} onClear={closeScore}/>
+                {score && (
+                    <Box sx={{mt: 2}}>
+                        <ScoreLanes score={score}
+                                    positionMs={positionMs}
+                                    sounding={sounding}
+                                    partChoices={partChoices}
+                                    onInstrumentChange={(index, instrumentId) =>
+                                        setPartChoices({...partChoices, [index]: instrumentId})}
+                                    onSeek={transport.seek}/>
+                    </Box>
+                )}
             </Box>
-            {/* one column on phones and in the desktop side column; two side by side on tablets */}
+            <Box sx={{gridArea: 'player', pr: {md: 1}}}>
+                <Player harmonicMatrix={harmonicMatrix}
+                        transport={score ? transport : null}
+                        onVolumeChange={setVolume}/>
+            </Box>
+            {/* one column on phones and in the desktop side column; two side by side on tablets.
+                An open score drives the results, so the hand-picked notes step aside until it
+                is closed rather than sitting there looking as though they still did something. */}
             <Box sx={{
+                display: score ? 'none' : 'grid',
                 gridArea: 'selectors',
-                display: 'grid',
                 gap: 2,
                 gridTemplateColumns: {xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))', md: 'minmax(0, 1fr)'},
                 alignItems: 'start',
@@ -172,7 +253,12 @@ function App() {
             </Box>
             <Box sx={{gridArea: 'results', minWidth: 0, display: 'flex', flexDirection: 'column'}}>
                 {harmonicMatrix.length === 0
-                    ? <QuickStart onPick={pickExample}/>
+                    ? (score
+                        ? <Typography variant="body2" color="text.secondary" sx={{py: 4}}>
+                            Nothing is sounding at the playhead. Press Play, or click the lanes where
+                            the parts have notes.
+                        </Typography>
+                        : <QuickStart onPick={pickExample} busyId={exampleBusy} error={exampleError}/>)
                     : <>
                         <Box sx={{order: {xs: 2, md: 1}}}>
                             <HarmonicTable harmonicMatrix={harmonicMatrix}/>

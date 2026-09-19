@@ -1,6 +1,28 @@
 import {fireEvent, render, screen, waitForElementToBeRemoved, within} from '@testing-library/react';
 import App from './App';
 
+import {readFileSync} from 'fs';
+import path from 'path';
+import {loadVerovio} from './service/verovio';
+
+jest.mock('./service/verovio');
+
+const verovio = require('verovio');
+
+let verovioToolkit;
+beforeAll(async () => {
+    verovioToolkit = await new Promise((resolve) => {
+        (function poll() {
+            try {
+                let candidate = new verovio.toolkit();
+                if (candidate.getVersion()) return resolve(candidate);
+            } catch (notReadyYet) { /* still starting */ }
+            setTimeout(poll, 50);
+        })();
+    });
+});
+beforeEach(() => loadVerovio.mockResolvedValue(verovioToolkit));
+
 beforeEach(() => window.history.replaceState(null, '', '/'));
 
 test('starts with one instrument group, the player and a quick start instead of results', () => {
@@ -8,7 +30,8 @@ test('starts with one instrument group, the player and a quick start instead of 
     expect(screen.getAllByLabelText(/^instrument$/i)).toHaveLength(1);
     expect(screen.getAllByLabelText(/^notes$/i)).toHaveLength(1);
     expect(screen.getByText(/Custom \(adjustable harmonics\)/)).toBeInTheDocument();
-    expect(screen.getByRole('button', {name: /play/i})).toBeInTheDocument();
+    // exact: an example's description mentions playing too
+    expect(screen.getByRole('button', {name: '▶ Play'})).toBeInTheDocument();
     expect(screen.queryByRole('button', {name: /remove/i})).not.toBeInTheDocument();
     expect(screen.getByRole('heading', {name: /see and hear the harmonic series/i})).toBeInTheDocument();
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
@@ -289,4 +312,31 @@ test('"Snap partials to notes" puts every partial on 0 cents and lands in the li
     expect(cellsText().every((text) => /0¢/.test(text))).toBe(true);
     expect(cellsText().some((text) => /1567\.98 Hz|1567\.98/.test(text))).toBe(true);
     expect(window.location.search).toContain('snap=1');
+});
+
+test('the Josquin example opens the score it ships with, ready to play', async () => {
+    let bytes = readFileSync(path.join(__dirname, '..', 'public', 'scores', 'mille-regretz.mxl'));
+    global.fetch = jest.fn(() => Promise.resolve({
+        ok: true,
+        arrayBuffer: async () => { let copy = new Uint8Array(bytes.length); copy.set(bytes); return copy.buffer; },
+    }));
+
+    render(<App/>);
+    fireEvent.click(screen.getByRole('button', {name: /Josquin, Mille Regretz/i}));
+
+    expect(await screen.findByText('Mille Regretz', {}, {timeout: 30000})).toBeInTheDocument();
+    expect(screen.getByText(/4 parts · 297 notes · 1:22/)).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: /play score/i})).toBeEnabled();
+    // the hand-picked side steps aside while a score is open, but stays built
+    // so that closing the score gives back whatever was being worked on
+    expect(screen.getByText('Instrument 1')).not.toBeVisible();
+}, 60000);
+
+test('an example that cannot be fetched says so instead of doing nothing', async () => {
+    global.fetch = jest.fn(() => Promise.resolve({ok: false}));
+
+    render(<App/>);
+    fireEvent.click(screen.getByRole('button', {name: /Josquin, Mille Regretz/i}));
+
+    expect(await screen.findByText(/could not be fetched/i)).toBeInTheDocument();
 });

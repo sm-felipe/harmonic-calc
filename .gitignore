@@ -21,3 +21,6 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# verovio browser build, copied from node_modules by scripts/copy-verovio.mjs
+/public/verovio

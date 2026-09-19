@@ -99,11 +99,7 @@ export class HarmonicPlayer {
     // Resolves to whether the context is actually producing sound. Browsers
     // keep a context suspended until a user gesture allows it.
     whenRunning() {
-        if (!this.context) {
-            return Promise.resolve(false);
-        }
-        let resumed = this.context.state === 'running' ? Promise.resolve() : Promise.resolve(this.context.resume());
-        return resumed.then(() => this.context.state === 'running', () => false);
+        return whenContextRuns(this.context);
     }
 
     setVolume(volume) {
@@ -140,18 +136,9 @@ export class HarmonicPlayer {
 
     ensureContext() {
         if (!this.context) {
-            let context = this.createContext();
-            let limiter = context.createDynamicsCompressor();
-            limiter.threshold.value = -6;
-            limiter.knee.value = 0;
-            limiter.ratio.value = 20;
-            limiter.attack.value = 0.003;
-            limiter.release.value = 0.1;
-            limiter.connect(context.destination);
-            let master = context.createGain();
-            master.connect(limiter);
-            this.context = context;
-            this.master = master;
+            let graph = createAudioGraph(this.createContext);
+            this.context = graph.context;
+            this.master = graph.master;
         }
         if (this.context.state === 'suspended') {
             this.context.resume();
@@ -159,7 +146,36 @@ export class HarmonicPlayer {
     }
 }
 
-function defaultContextFactory() {
+/**
+ * A fresh context with the output chain every player here shares: sound goes
+ * through a master gain into a limiter, which catches the peaks that summed
+ * sines throw up now and then. Returns {context, master}; connect to `master`.
+ */
+export function createAudioGraph(createContext = defaultContextFactory) {
+    let context = createContext();
+    let limiter = context.createDynamicsCompressor();
+    limiter.threshold.value = -6;
+    limiter.knee.value = 0;
+    limiter.ratio.value = 20;
+    limiter.attack.value = 0.003;
+    limiter.release.value = 0.1;
+    limiter.connect(context.destination);
+    let master = context.createGain();
+    master.connect(limiter);
+    return {context, master};
+}
+
+// Resolves to whether a context is actually producing sound. Browsers keep one
+// suspended until a user gesture allows it.
+export function whenContextRuns(context) {
+    if (!context) {
+        return Promise.resolve(false);
+    }
+    let resumed = context.state === 'running' ? Promise.resolve() : Promise.resolve(context.resume());
+    return resumed.then(() => context.state === 'running', () => false);
+}
+
+export function defaultContextFactory() {
     let AudioContext = window.AudioContext || window.webkitAudioContext;
     return new AudioContext();
 }
