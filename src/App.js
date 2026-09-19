@@ -18,10 +18,13 @@ import {buildTuningContext} from "./service/temperaments";
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import {defaultInstrument, findInstrument} from "./service/instruments";
 import ScoreLoader from "./components/ScoreLoader";
 import ScoreLanes from "./components/ScoreLanes";
+import ScoreView from "./components/ScoreView";
 import {changeIndexAt, groupsAt} from "./service/musicXml";
 import useScorePlayer from "./components/useScorePlayer";
 
@@ -66,6 +69,7 @@ function App() {
     let [score, setScore] = useState(null);
     let [partChoices, setPartChoices] = useState({});   // partIndex -> instrument id
     let [volume, setVolume] = useState(1);
+    let [scoreView, setScoreView] = useState('lanes');
     let [exampleBusy, setExampleBusy] = useState(null);
     let [exampleError, setExampleError] = useState(null);
 
@@ -204,13 +208,25 @@ function App() {
                 <ScoreLoader score={score} onLoad={openScore} onClear={closeScore}/>
                 {score && (
                     <Box sx={{mt: 2}}>
-                        <ScoreLanes score={score}
-                                    positionMs={positionMs}
-                                    sounding={sounding}
-                                    partChoices={partChoices}
-                                    onInstrumentChange={(index, instrumentId) =>
-                                        setPartChoices({...partChoices, [index]: instrumentId})}
-                                    onSeek={transport.seek}/>
+                        {/* the toggle is the section heading: lanes to find your way
+                            around the piece, the score to read what is written */}
+                        <ToggleButtonGroup exclusive
+                                           size="small"
+                                           value={scoreView}
+                                           onChange={(event, chosen) => chosen && setScoreView(chosen)}
+                                           sx={{mb: 1}}>
+                            <ToggleButton value="lanes">Parts</ToggleButton>
+                            <ToggleButton value="score">Score</ToggleButton>
+                        </ToggleButtonGroup>
+                        {scoreView === 'lanes'
+                            ? <ScoreLanes score={score}
+                                          positionMs={positionMs}
+                                          sounding={sounding}
+                                          partChoices={partChoices}
+                                          onInstrumentChange={(index, instrumentId) =>
+                                              setPartChoices({...partChoices, [index]: instrumentId})}
+                                          onSeek={transport.seek}/>
+                            : <ScoreView score={score} sounding={sounding} following={transport.playing}/>}
                     </Box>
                 )}
             </Box>

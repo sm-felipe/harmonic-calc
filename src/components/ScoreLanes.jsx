@@ -46,10 +46,6 @@ export default function ScoreLanes({score, positionMs = 0, sounding = [], partCh
     }
 
     return <Box>
-        <Typography variant="overline" component="h2"
-                    sx={{display: 'block', lineHeight: 1.5, color: 'text.secondary'}}>
-            Parts
-        </Typography>
         <Box ref={containerRef} sx={{overflowX: 'auto', ...scrollShadows}}>
             <Box sx={{display: 'flex', minWidth: CONTROLS_WIDTH + MIN_LANE_WIDTH}}>
                 <Box sx={{width: CONTROLS_WIDTH, flexShrink: 0, pr: 1}}>
