@@ -11,9 +11,10 @@ import {CUSTOM_LEVEL_PRESETS, CUTOFF_DB} from "../service/instruments";
 
 // Drawbar-style editor for the custom instrument: one vertical slider per
 // partial, 0 dB at the top and "off" (the audibility cutoff) at the bottom.
-// Collapsed by default so it stays out of the way of people who just want
-// to pick notes.
-export default function HarmonicLevels({levels, onChange}) {
+// Collapsed by default so it stays out of the way of people who just want to
+// pick notes; `open` starts it unfolded, for an example whose whole point is
+// the shape of the levels.
+export default function HarmonicLevels({levels, onChange, open = false}) {
     function setLevel(index, value) {
         let next = [...levels];
         next[index] = value;
@@ -21,6 +22,7 @@ export default function HarmonicLevels({levels, onChange}) {
     }
 
     return <Accordion disableGutters elevation={0} square
+                      defaultExpanded={open}
                       sx={{border: 1, borderColor: 'divider', borderRadius: 1, '&:before': {display: 'none'}}}>
         <AccordionSummary expandIcon={<ExpandIcon/>}
                           sx={{

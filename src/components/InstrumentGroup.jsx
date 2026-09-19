@@ -56,6 +56,7 @@ export default function InstrumentGroup({index, group, noteNames, canRemove, onC
             </TextField>
             {instrument.customizable && (
                 <HarmonicLevels levels={group.harmonicLevels || instrument.defaultLevels}
+                                open={Boolean(group.showLevels)}
                                 onChange={(harmonicLevels) => onChange({...group, harmonicLevels})}/>
             )}
         </Stack>

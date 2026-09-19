@@ -22,12 +22,17 @@ export const examples = [
         tuning: {...defaultTuning, temperamentId: 'just', keyId: 'A'},
     },
     {
-        id: 'odd-vs-clarinet',
-        title: 'Odd harmonics only, next to a clarinet',
-        description: 'A custom instrument with the even harmonics switched off, compared with the real thing.',
+        id: 'odd-harmonics',
+        title: 'Odd harmonics only',
+        description: 'Every even partial switched off, which is what gives the clarinet\'s low register its hollow sound. The sliders open so you can put them back one at a time.',
         groups: [
-            {instrumentId: 'custom', notes: ['A3'], harmonicLevels: CUSTOM_LEVEL_PRESETS.find((preset) => preset.id === 'odd').levels},
-            {instrumentId: 'clarinet', notes: ['A3']},
+            {
+                instrumentId: 'custom',
+                notes: ['A3'],
+                harmonicLevels: CUSTOM_LEVEL_PRESETS.find((preset) => preset.id === 'odd').levels,
+                // the levels are the point of this one, so they start unfolded
+                showLevels: true,
+            },
         ],
         tuning: defaultTuning,
     },
@@ -68,6 +73,7 @@ export function loadExample(example, makeGroup) {
             instrumentId: group.instrumentId,
             notes: group.notes.map(indexOfNote),
             ...(group.harmonicLevels ? {harmonicLevels: [...group.harmonicLevels]} : {}),
+            ...(group.showLevels ? {showLevels: true} : {}),
         })),
         tuning: {...example.tuning},
     };

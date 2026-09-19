@@ -54,15 +54,29 @@ test('an example fills the selectors and the tuning in one click', () => {
     expect(screen.getByLabelText('Key')).toHaveTextContent('A/F#m');
 });
 
-test('the two-group example creates two instrument boxes', () => {
+test('the odd-harmonics example comes as one instrument with its sliders open', () => {
     render(<App/>);
     fireEvent.click(screen.getByRole('button', {name: /odd harmonics only/i}));
-    expect(screen.getAllByLabelText(/^instrument$/i)).toHaveLength(2);
-    expect(screen.getAllByRole('button', {name: /remove instrument/i})).toHaveLength(2);
-    // the custom group's 2nd harmonic is off, the clarinet's is merely weak
-    let rows = screen.getAllByRole('row').slice(1);
-    expect(within(rows[0]).getAllByRole('cell')[2]).toBeEmptyDOMElement();
-    expect(within(rows[1]).getAllByRole('cell')[2]).not.toBeEmptyDOMElement();
+
+    expect(screen.getAllByLabelText(/^instrument$/i)).toHaveLength(1);
+    expect(screen.queryByRole('button', {name: /remove instrument/i})).not.toBeInTheDocument();
+
+    // the even partials are switched off, so their cells are empty
+    let [, ...cells] = within(screen.getAllByRole('row')[1]).getAllByRole('cell');
+    expect(cells[1]).toBeEmptyDOMElement();       // 2nd
+    expect(cells[2]).not.toBeEmptyDOMElement();   // 3rd
+    expect(cells[3]).toBeEmptyDOMElement();       // 4th
+
+    // the levels are what this example is about, so they arrive unfolded
+    expect(screen.getByLabelText('Harmonic 2 level')).toBeVisible();
+});
+
+test('the sliders stay folded away otherwise', () => {
+    render(<App/>);
+    expect(screen.getByLabelText('Harmonic 2 level')).not.toBeVisible();
+
+    fireEvent.click(screen.getByRole('button', {name: /A major chord, justly tuned/i}));
+    expect(screen.queryByLabelText('Harmonic 2 level')).not.toBeInTheDocument();   // a voice, not the custom one
 });
 
 test('add instrument creates a paired instrument/notes group that can be removed', () => {
