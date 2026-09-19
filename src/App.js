@@ -209,7 +209,9 @@ function App() {
                 {score && (
                     <Box sx={{mt: 2}}>
                         {/* the toggle is the section heading: lanes to find your way
-                            around the piece, the score to read what is written */}
+                            around the piece, the score to read what is written, and
+                            the same score on one line when the parts should line up
+                            the way the lanes do */}
                         <ToggleButtonGroup exclusive
                                            size="small"
                                            value={scoreView}
@@ -217,6 +219,7 @@ function App() {
                                            sx={{mb: 1}}>
                             <ToggleButton value="lanes">Parts</ToggleButton>
                             <ToggleButton value="score">Score</ToggleButton>
+                            <ToggleButton value="continuous">One line</ToggleButton>
                         </ToggleButtonGroup>
                         {scoreView === 'lanes'
                             ? <ScoreLanes score={score}
@@ -226,7 +229,10 @@ function App() {
                                           onInstrumentChange={(index, instrumentId) =>
                                               setPartChoices({...partChoices, [index]: instrumentId})}
                                           onSeek={transport.seek}/>
-                            : <ScoreView score={score} sounding={sounding} following={transport.playing}/>}
+                            : <ScoreView score={score}
+                                         sounding={sounding}
+                                         following={transport.playing}
+                                         continuous={scoreView === 'continuous'}/>}
                     </Box>
                 )}
             </Box>

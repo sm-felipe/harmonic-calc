@@ -43,6 +43,11 @@ function scoreOf(overrides = {}) {
     };
 }
 
+// the element that scrolls: the outer Box wraps it, the host div sits inside it
+function scrollerOf(container) {
+    return container.querySelectorAll('div')[1];
+}
+
 function lit(container) {
     return [...container.querySelectorAll('.sounding')].map((element) => element.id);
 }
@@ -117,4 +122,57 @@ test('the line being sung is brought into view only while the piece plays', () =
 
     rerender(<ScoreView score={score} sounding={[0]} following={true}/>);
     expect(scrolled).toHaveBeenCalled();
+});
+
+// --- the whole piece on one line, as the lanes lay it out -----------------
+
+test('one line means no page breaks and no page to bound the drawing', () => {
+    let score = scoreOf({getPageCount: jest.fn(() => 1)});
+    render(<ScoreView score={score} continuous/>);
+
+    expect(score.toolkit.setOptions).toHaveBeenCalledWith(expect.objectContaining({breaks: 'none'}));
+    let {pageWidth, pageHeight} = score.toolkit.setOptions.mock.calls[0][0];
+    expect(pageWidth).toBeGreaterThan(50000);
+    expect(pageHeight).toBeGreaterThan(50000);
+    // it all fits on one page, so there is nothing to turn
+    expect(screen.queryByRole('button', {name: /next/i})).not.toBeInTheDocument();
+});
+
+test('the paged view is the one that breaks lines', () => {
+    let score = scoreOf();
+    render(<ScoreView score={score}/>);
+    expect(score.toolkit.setOptions).toHaveBeenCalledWith(expect.objectContaining({breaks: 'auto'}));
+});
+
+test('on one line the score slides sideways to keep the note being sung in view', () => {
+    let score = scoreOf({getPageCount: jest.fn(() => 1)});
+    let {container, rerender} = render(<ScoreView score={score} sounding={[0]} continuous/>);
+
+    // the container pans: 800 visible of 4000
+    let scroller = scrollerOf(container);
+    Object.defineProperty(scroller, 'scrollWidth', {configurable: true, value: 4000});
+    scroller.scrollLeft = 0;
+    scroller.getBoundingClientRect = () => ({left: 0, right: 800, width: 800, top: 0, bottom: 400, height: 400});
+    // the next note sits well off to the right
+    let target = container.querySelector('#n2');
+    target.getBoundingClientRect = () => ({left: 1500, right: 1510, width: 10, top: 0, bottom: 10, height: 10});
+
+    rerender(<ScoreView score={score} sounding={[1]} continuous following/>);
+
+    // held a third of the way in: 1500 - 0 - 800/3
+    expect(Math.round(scroller.scrollLeft)).toBe(1233);
+});
+
+test('a score that fits needs no sliding, and the window is scrolled instead', () => {
+    let scrolled = jest.fn();
+    Element.prototype.scrollIntoView = scrolled;
+
+    let score = scoreOf();
+    let {container, rerender} = render(<ScoreView score={score} sounding={[0]}/>);
+    let scroller = scrollerOf(container);
+    Object.defineProperty(scroller, 'scrollWidth', {configurable: true, value: 800});   // same as clientWidth
+
+    rerender(<ScoreView score={score} sounding={[1]} following/>);
+    expect(scrolled).toHaveBeenCalled();
+    expect(scroller.scrollLeft).toBeFalsy();
 });

@@ -28,9 +28,15 @@ const PAGE_HEIGHT_UNITS = 2970;
 // width and is panned sideways instead, which is more use than a legible-in-
 // theory reflow that puts one bar on a line.
 const MIN_SCORE_WIDTH_PX = 700;
+// running the whole piece on one line needs a page with no bounds to speak of;
+// Verovio then sizes the drawing to the music rather than to this
+const UNBOUNDED_PAGE_UNITS = 60000;
+// where the note being sung is held as the score slides past, as a fraction of
+// the width: a third in leaves what is coming visible
+const FOLLOW_ANCHOR = 1 / 3;
 const SOUNDING_COLOUR = '#d32f2f';
 
-export default function ScoreView({score, sounding = [], following = false}) {
+export default function ScoreView({score, sounding = [], following = false, continuous = false}) {
     let [containerRef, containerWidth] = useContainerWidth();
     let [page, setPage] = useState(1);
     let [pageCount, setPageCount] = useState(score.pageCount);
@@ -49,17 +55,26 @@ export default function ScoreView({score, sounding = [], following = false}) {
         // of white under it, because one system with its lyrics is tall.
         // The height is passed every time rather than left out, because
         // setOptions merges into whatever the toolkit already carries.
-        toolkit.setOptions({
-            scale: SCALE,
-            pageWidth: Math.round(Math.max(containerWidth, MIN_SCORE_WIDTH_PX) * UNITS_PER_PIXEL),
-            pageHeight: PAGE_HEIGHT_UNITS,
-            adjustPageHeight: true,
-        });
+        toolkit.setOptions(continuous
+            ? {
+                scale: SCALE,
+                breaks: 'none',
+                pageWidth: UNBOUNDED_PAGE_UNITS,
+                pageHeight: UNBOUNDED_PAGE_UNITS,
+                adjustPageHeight: true,
+            }
+            : {
+                scale: SCALE,
+                breaks: 'auto',
+                pageWidth: Math.round(Math.max(containerWidth, MIN_SCORE_WIDTH_PX) * UNITS_PER_PIXEL),
+                pageHeight: PAGE_HEIGHT_UNITS,
+                adjustPageHeight: true,
+            });
         toolkit.redoLayout();
         let count = toolkit.getPageCount();
         setPageCount(count);
         setMarkup(toolkit.renderToSVG(Math.min(page, count), {}));
-    }, [score, containerWidth, page]);
+    }, [score, containerWidth, page, continuous]);
 
     // Turn the page for the music rather than making the reader do it. Keyed
     // off the first sounding note, so paging by hand while stopped stays put.
@@ -92,8 +107,8 @@ export default function ScoreView({score, sounding = [], following = false}) {
                 }
             }
         }
-        if (following && marked.length && marked[0].scrollIntoView) {
-            marked[0].scrollIntoView({block: 'nearest', inline: 'nearest'});
+        if (following && marked.length) {
+            bringIntoView(containerRef.current, marked[0]);
         }
         return () => marked.forEach((element) => element.classList.remove('sounding'));
         // `following` deliberately absent: starting to play should not scroll
@@ -123,8 +138,28 @@ export default function ScoreView({score, sounding = [], following = false}) {
             </Stack>
         )}
         <Typography variant="caption" color="text.secondary" sx={{display: 'block', mt: 0.75}}>
-            The score as written, engraved from the file itself. Notes sounding at the playhead are red, and
-            the page turns itself to follow the music.
+            The score as written, engraved from the file itself. Notes sounding at the playhead are red.
+            {continuous
+                ? ' Every part runs on one line, as the lanes do, and the score slides past as the piece plays.'
+                : ' The page turns itself to follow the music.'}
         </Typography>
     </Box>;
+}
+
+/**
+ * Keeps an element in sight as the music moves on. A score on one line is held
+ * inside its own sideways scroller, so that is nudged along; a page of a score
+ * is taller than the window instead, so the window is what scrolls.
+ */
+function bringIntoView(scroller, element) {
+    if (!scroller || !element.getBoundingClientRect) {
+        return;
+    }
+    if (scroller.scrollWidth > scroller.clientWidth) {
+        let box = scroller.getBoundingClientRect();
+        let mark = element.getBoundingClientRect();
+        scroller.scrollLeft += mark.left - box.left - box.width * FOLLOW_ANCHOR;
+    } else if (element.scrollIntoView) {
+        element.scrollIntoView({block: 'nearest', inline: 'nearest'});
+    }
 }
