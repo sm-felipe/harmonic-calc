@@ -25,6 +25,7 @@ beforeEach(() => {
         stop: jest.fn(),
         seek: jest.fn(),
         setVolume: jest.fn(),
+        retune: jest.fn(() => true),
         close: jest.fn(),
         whenRunning: jest.fn(() => Promise.resolve(true)),
     };
@@ -104,14 +105,35 @@ test('giving a part another instrument is heard at once, from where the piece is
     }));
 });
 
-test('retuning the piece is heard at once', () => {
+test('retuning glides the voices across instead of starting the piece again', () => {
     let {result, rerender} = transport();
     act(() => result.current.play(0));
     instance.start.mockClear();
     instance.positionMs = 900;
 
+    let retuned = {names: [], frequencies: [1]};
+    act(() => rerender({score, tuningContext: retuned, parts: [{instrumentId: 'voice-a'}], volume: 1}));
+
+    expect(instance.retune).toHaveBeenCalledWith(retuned);
+    expect(instance.start).not.toHaveBeenCalled();
+    expect(result.current.playing).toBe(true);
+});
+
+test('a retuning the voices cannot express falls back to starting from where it is', () => {
+    let {result, rerender} = transport();
+    act(() => result.current.play(0));
+    instance.start.mockClear();
+    instance.positionMs = 900;
+    instance.retune.mockReturnValue(false);
+
     act(() => rerender({score, tuningContext: {names: [], frequencies: [1]}, parts: [{instrumentId: 'voice-a'}], volume: 1}));
     expect(instance.start).toHaveBeenCalledWith(score, expect.objectContaining({fromMs: 900}));
+});
+
+test('a piece that is not sounding is not retuned behind the scenes', () => {
+    let {rerender} = transport();
+    act(() => rerender({score, tuningContext: {names: [], frequencies: [1]}, parts: [], volume: 1}));
+    expect(instance.retune).not.toHaveBeenCalled();
 });
 
 test('volume is turned, not restarted', () => {

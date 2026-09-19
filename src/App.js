@@ -2,7 +2,7 @@ import {useEffect, useMemo, useRef, useState} from "react";
 import HarmonicTable from "./components/HarmonicTable";
 import {calculateHarmonicMatrix} from "./service/HarmonicMatrix";
 import {Spectogram2} from "./components/Spectogram2";
-import Player from "./components/Player";
+import SoundBar from "./components/SoundBar";
 import InstrumentGroup from "./components/InstrumentGroup";
 import TopBar from "./components/TopBar";
 import OptionsDrawer from "./components/OptionsDrawer";
@@ -139,10 +139,11 @@ function App() {
 
     let harmonicMatrix = score ? scoreMatrix : manualMatrix;
 
-    // The fullest chord in the piece decides how tall the table is, so it stops
-    // growing and shrinking a row at a time as voices enter and drop out, which
-    // shunts the spectrum below it up and down.
-    let tableRows = useMemo(
+    // The fullest chord in the piece decides how tall the results are. Both the
+    // table's rows and the spectrum's legend take a line per note, so without
+    // this they grow and shrink as voices enter and drop out, and the page walks
+    // up and down under the reader while the music plays.
+    let mostVoices = useMemo(
         () => score ? score.changes.reduce((most, change) => Math.max(most, change.notes.length), 0) : 0,
         [score]);
 
@@ -188,9 +189,10 @@ function App() {
         setTuning(loaded.tuning);
     }
 
-    // Desktop: player above the selectors in a left column; spectrum, table and
-    // wave on the right. Phone: selectors first to invite interaction, then the
-    // player and the same three.
+    // Desktop: the selectors in a left column, spectrum, table and wave on the
+    // right. Phone: selectors first to invite interaction, then the same three.
+    // The sound — transport, volume, tuning — is in a bar of its own at the
+    // foot, in reach whatever has been scrolled to.
     return <>
         <TopBar onMenuClick={() => setMenuOpen(true)}/>
         <OptionsDrawer open={menuOpen} onClose={() => setMenuOpen(false)}>
@@ -205,10 +207,10 @@ function App() {
             display: 'grid',
             gap: 2,
             gridTemplateColumns: {xs: 'minmax(0, 1fr)', md: '300px minmax(0, 1fr)'},
-            gridTemplateRows: {md: 'auto auto 1fr'},
+            gridTemplateRows: {md: 'auto 1fr'},
             gridTemplateAreas: {
-                xs: '"score" "selectors" "player" "results"',
-                md: '"score score" "player results" "selectors results"',
+                xs: '"score" "selectors" "results"',
+                md: '"score score" "selectors results"',
             },
         }}>
             <Box sx={{gridArea: 'score', minWidth: 0}}>
@@ -243,11 +245,6 @@ function App() {
                                          onSeek={transport.seek}/>}
                     </Box>
                 )}
-            </Box>
-            <Box sx={{gridArea: 'player', pr: {md: 1}}}>
-                <Player harmonicMatrix={harmonicMatrix}
-                        transport={score ? transport : null}
-                        onVolumeChange={setVolume}/>
             </Box>
             {/* one column on phones and in the desktop side column; two side by side on tablets.
                 An open score drives the results, so the hand-picked notes step aside until it
@@ -293,10 +290,10 @@ function App() {
                         {/* the spectrum leads on every width: it is the picture of
                             the sound, and the table is the detail behind it */}
                         <Box sx={{order: 1, mb: 2}}>
-                            <Spectogram2 harmonicMatrix={harmonicMatrix}/>
+                            <Spectogram2 harmonicMatrix={harmonicMatrix} minSeries={mostVoices}/>
                         </Box>
                         <Box sx={{order: 2}}>
-                            <HarmonicTable harmonicMatrix={harmonicMatrix} minRows={tableRows}/>
+                            <HarmonicTable harmonicMatrix={harmonicMatrix} minRows={mostVoices}/>
                         </Box>
                         {display.showWave && (
                             <Box sx={{order: 3}}>
@@ -306,6 +303,11 @@ function App() {
                     </>}
             </Box>
         </Box>
+        <SoundBar harmonicMatrix={harmonicMatrix}
+                  transport={score ? transport : null}
+                  tuning={tuning}
+                  onTuningChange={setTuning}
+                  onVolumeChange={setVolume}/>
     </>;
 }
 

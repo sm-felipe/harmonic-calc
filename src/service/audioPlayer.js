@@ -4,6 +4,9 @@
 // partials are sounding. A limiter catches the occasional peak.
 
 const FADE_SECONDS = 0.03;
+// Long enough that a retuning is heard as the pitch moving rather than as a
+// step, short enough that it is over before anyone calls it a portamento.
+const GLIDE_SECONDS = 0.04;
 
 export function amplitudeFromDb(levelDb) {
     return Math.pow(10, levelDb / 20);
@@ -27,7 +30,8 @@ export class HarmonicPlayer {
     master = null;
     voice = null;
     oscillators = [];
-    partials = [];   // {gain, frequency} per oscillator, for in-place updates
+    partials = [];   // {gain, oscillator} per oscillator, for in-place updates
+    shape = [];      // note and harmonic number of each partial, in order
 
     constructor(createContext = defaultContextFactory) {
         this.createContext = createContext;
@@ -59,18 +63,21 @@ export class HarmonicPlayer {
                 gain.connect(voice);
                 oscillator.start(now);
                 this.oscillators.push(oscillator);
-                this.partials.push({gain, frequency: partial.frequency});
+                this.partials.push({gain, oscillator});
             }
         }
+        this.shape = shapeOf(harmonicMatrix);
         this.voice = voice;
         this.setVolume(volume);
     }
 
     /**
-     * Follow a changed matrix. When only levels changed (same partials at the
-     * same frequencies) the gains glide to their new values without
-     * restarting, so dragging a harmonic's slider is heard smoothly; any
-     * other change restarts the sound.
+     * Follow a changed matrix. As long as the same notes are sounding with the
+     * same partials, the levels and the frequencies glide to their new values
+     * without restarting: dragging a harmonic's slider is heard smoothly, and
+     * so is retuning, which moves every partial at once. Only a change of the
+     * notes themselves starts the sound again — gliding into a different chord
+     * would be a portamento, not a chord change.
      */
     update(harmonicMatrix, volume = 1) {
         if (!this.playing || !this.sameShape(harmonicMatrix)) {
@@ -82,6 +89,7 @@ export class HarmonicPlayer {
         for (let row of harmonicMatrix) {
             for (let partial of row.harmonics) {
                 this.partials[index].gain.gain.setTargetAtTime(amplitudeFromDb(partial.levelDb), now, 0.02);
+                this.partials[index].oscillator.frequency.setTargetAtTime(partial.frequency, now, GLIDE_SECONDS);
                 index++;
             }
         }
@@ -90,10 +98,11 @@ export class HarmonicPlayer {
         this.setVolume(volume);
     }
 
+    // The same notes carrying the same partials, whatever those are tuned to.
     sameShape(harmonicMatrix) {
-        let frequencies = harmonicMatrix.flatMap((row) => row.harmonics.map((partial) => partial.frequency));
-        return frequencies.length === this.partials.length
-            && frequencies.every((frequency, index) => Math.abs(frequency - this.partials[index].frequency) < 1e-6);
+        let shape = shapeOf(harmonicMatrix);
+        return shape.length === this.shape.length
+            && shape.every((entry, index) => entry === this.shape[index]);
     }
 
     // Resolves to whether the context is actually producing sound. Browsers
@@ -122,6 +131,7 @@ export class HarmonicPlayer {
         }
         this.oscillators = [];
         this.partials = [];
+        this.shape = [];
         this.voice = null;
     }
 
@@ -178,4 +188,10 @@ export function whenContextRuns(context) {
 export function defaultContextFactory() {
     let AudioContext = window.AudioContext || window.webkitAudioContext;
     return new AudioContext();
+}
+
+// What a matrix is made of, ignoring what it is tuned to: the note of each row
+// and the harmonic number of each of its partials.
+function shapeOf(harmonicMatrix) {
+    return harmonicMatrix.flatMap((row) => row.harmonics.map((partial) => `${row.note}:${partial.harmonicNumber}`));
 }

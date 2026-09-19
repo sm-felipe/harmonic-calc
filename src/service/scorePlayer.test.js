@@ -2,7 +2,7 @@ import {ScorePlayer} from './scorePlayer';
 import {calculateHarmonicMatrix} from './HarmonicMatrix';
 import {findInstrument} from './instruments';
 import {indexOfNote} from './notes';
-import {defaultTuningContext} from './temperaments';
+import {buildTuningContext, defaultTuningContext} from './temperaments';
 
 function fakeParam(value = 0) {
     return {
@@ -253,4 +253,56 @@ test('whenRunning reports whether the context produces sound', async () => {
     let {player} = playing(TWO_NOTES);
     expect(await player.whenRunning()).toBe(true);
     expect(await new ScorePlayer(fakeContext).whenRunning()).toBe(false);
+});
+
+// --- changing the tuning under a piece that is already sounding -----------
+
+test('retuning slides every partial of every sounding voice to its new pitch', () => {
+    let {context, player} = playing(TWO_NOTES);
+    let before = context.oscillators.length;
+    // every voice already has its ending scheduled from when it began
+    let endings = context.oscillators.map((oscillator) => oscillator.stop.mock.calls.length);
+
+    // a temperament moves partials by cents, so the same ones stay audible
+    let retuned = buildTuningContext({temperamentId: 'just', keyId: 'A', a4: 440});
+    expect(player.retune(retuned)).toBe(true);
+
+    // nothing was started again, and nothing was brought to an end
+    expect(context.oscillators).toHaveLength(before);
+    expect(context.oscillators.map((oscillator) => oscillator.stop.mock.calls.length)).toEqual(endings);
+
+    // and every partial was sent to where just intonation puts it
+    let expected = calculateHarmonicMatrix([A4], findInstrument('voice-a'), retuned)[0].harmonics;
+    context.oscillators.forEach((oscillator, index) => {
+        expect(oscillator.frequency.setTargetAtTime)
+            .toHaveBeenCalledWith(expect.closeTo(expected[index].frequency, 6), expect.any(Number), expect.any(Number));
+    });
+    expect(player.tuningContext).toBe(retuned);
+});
+
+test('a retuning that would change a voice\'s partials is refused rather than half done', () => {
+    let {context, player} = playing(TWO_NOTES);
+    let calls = context.oscillators[0].frequency.setTargetAtTime.mock.calls.length;
+
+    // dropping the reference pitch to 415 lowers every note, and one more
+    // partial comes in under the cutoff: no glide can express that
+    let lower = buildTuningContext({temperamentId: 'equal', keyId: 'C', a4: 415});
+    expect(player.retune(lower)).toBe(false);
+
+    expect(context.oscillators[0].frequency.setTargetAtTime).toHaveBeenCalledTimes(calls);
+    expect(player.tuningContext).toBe(defaultTuningContext);   // untouched
+});
+
+test('notes still to come are built with the new tuning', () => {
+    let {context, player} = playing(TWO_NOTES);
+    let retuned = buildTuningContext({temperamentId: 'just', keyId: 'A', a4: 440});
+    player.retune(retuned);
+
+    let sounded = context.oscillators.length;
+    context.currentTime = 2;
+    player.tick();
+
+    let expected = calculateHarmonicMatrix([C5], findInstrument('voice-a'), retuned)[0].harmonics;
+    expect(context.oscillators.slice(sounded).map((oscillator) => oscillator.frequency.value))
+        .toEqual(expected.map((partial) => partial.frequency));
 });

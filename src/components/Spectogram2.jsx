@@ -19,7 +19,12 @@ const LEGEND_ROW_PX = 13;
 // the plot fills its container; below this width it scrolls sideways instead
 const MIN_PLOT_WIDTH = 560;
 
-export function Spectogram2({harmonicMatrix}) {
+/**
+ * `minSeries` holds the plot at the height the fullest chord of a piece needs.
+ * The legend takes a row per note, so without it the chart grows and shrinks as
+ * voices enter and drop out, and everything below it walks up and down the page.
+ */
+export function Spectogram2({harmonicMatrix, minSeries = 0}) {
     let series = convertToPlotData(harmonicMatrix);
     let partialCount = series.reduce((sum, row) => sum + row.length, 0);
     let labelled = partialCount <= MAX_LABELLED_PARTIALS;
@@ -35,7 +40,7 @@ export function Spectogram2({harmonicMatrix}) {
         <Box ref={containerRef} translate="no" sx={{overflowX: 'auto', ...scrollShadows}}>
             {/* react-plot draws the bottom legend inside the plot box, so the
                 bottom margin stays tiny and the height grows with the legend */}
-            <Plot width={plotWidth} height={232 + LEGEND_ROW_PX * series.length}
+            <Plot width={plotWidth} height={232 + LEGEND_ROW_PX * Math.max(series.length, minSeries)}
                   margin={{left: 60, right: 40, top: 20, bottom: 4}}>
                 {series.map((row, index) => {
                     let colour = SERIES_COLOURS[index % SERIES_COLOURS.length];

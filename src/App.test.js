@@ -49,9 +49,9 @@ test('an example fills the selectors and the tuning in one click', () => {
     // just intonation from A: the 5th partial of A3 is exactly C#6
     expect(within(within(rows[0]).getAllByRole('cell')[5]).getByText('0¢')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', {name: /open menu/i}));
-    expect(screen.getByLabelText(/temperament/i)).toHaveTextContent(/just intonation/i);
-    expect(screen.getByLabelText(/^key$/i)).toHaveTextContent(/A major/);
+    // the sound bar shows the tuning in its short form
+    expect(screen.getByLabelText('Temperament')).toHaveTextContent('Just 5');
+    expect(screen.getByLabelText('Key')).toHaveTextContent('A/F#m');
 });
 
 test('the two-group example creates two instrument boxes', () => {
@@ -109,11 +109,11 @@ test('the hamburger menu opens and closes the options drawer', async () => {
 
     fireEvent.click(screen.getByRole('button', {name: /open menu/i}));
     expect(screen.getByRole('heading', {name: 'Options'})).toBeInTheDocument();
-    expect(screen.getByLabelText(/temperament/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^key$/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/A4 \(Hz\)/i)).toBeInTheDocument();
     // equal temperament lets you force sharps or flats
     expect(screen.getByLabelText(/accidentals/i)).toBeInTheDocument();
+    // the temperament, the key and the snap live in the bar instead
+    expect(screen.getByText(/bar at the foot of the window/i)).toBeInTheDocument();
 
     // references sit collapsed at the end
     expect(screen.getByText(/Fletcher/)).not.toBeVisible();
@@ -147,16 +147,17 @@ test('changing the temperament re-tunes notes already on screen', () => {
     let fifthHarmonic = () => within(screen.getAllByRole('row', {hidden: true})[1]).getAllByRole('cell', {hidden: true})[5];
     expect(within(fifthHarmonic()).getByText('−14¢')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', {name: /open menu/i}));
-    fireEvent.mouseDown(screen.getByLabelText(/temperament/i));
+    // straight from the bar, without opening anything
+    fireEvent.mouseDown(screen.getByLabelText('Temperament'));
     fireEvent.click(screen.getByRole('option', {name: /just intonation/i}));
-    // unequal temperaments decide the spelling themselves
-    expect(screen.queryByLabelText(/accidentals/i)).not.toBeInTheDocument();
-
-    fireEvent.mouseDown(screen.getByLabelText(/^key$/i));
+    fireEvent.mouseDown(screen.getByLabelText('Key'));
     fireEvent.click(screen.getByRole('option', {name: /^A major/}));
     // with A as the tonic, the 5th harmonic of A3 is exactly C#6
     expect(within(fifthHarmonic()).getByText('0¢')).toBeInTheDocument();
+
+    // unequal temperaments decide the spelling themselves, so the drawer drops it
+    fireEvent.click(screen.getByRole('button', {name: /open menu/i}));
+    expect(screen.queryByLabelText(/accidentals/i)).not.toBeInTheDocument();
 
     fireEvent.mouseDown(screen.getByLabelText(/A4 \(Hz\)/i));
     fireEvent.click(screen.getByRole('option', {name: /^415 Hz/}));

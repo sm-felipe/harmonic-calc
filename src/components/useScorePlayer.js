@@ -95,21 +95,32 @@ export default function useScorePlayer(score, {tuningContext, parts, volume = 1}
         }
     }, [volume]);
 
-    // Retuning the piece, or giving a part a different instrument, has to be
-    // heard at once: the notes already scheduled were built with the old ones,
-    // so the piece picks up again from where it is. Volume is not in here,
-    // because it is a gain that can simply be turned.
-    //
-    // The tuning is compared by identity, so the caller has to memoise it — an
-    // unmemoised context would restart the piece on every render, and the
-    // symptom would be continuous stuttering rather than an obvious error.
+    // Giving a part a different instrument changes the whole spectrum, so the
+    // piece picks up again from where it is with the new timbre.
     let timbreKey = (parts || []).map((part) => part.instrumentId).join(',');
     useEffect(() => {
         if (playing && playerRef.current) {
             play(playerRef.current.positionMs);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [timbreKey, tuningContext]);
+    }, [timbreKey]);
+
+    // A retuning is different: the same notes carry on, their partials only
+    // move, so the voices glide across and the music is not interrupted. When a
+    // voice cannot be expressed that way the player says so and we restart.
+    //
+    // The tuning is compared by identity, so the caller has to memoise it — an
+    // unmemoised context would restart the piece on every render, and the
+    // symptom would be continuous stuttering rather than an obvious error.
+    useEffect(() => {
+        if (!playing || !playerRef.current) {
+            return;
+        }
+        if (!playerRef.current.retune(tuningContext)) {
+            play(playerRef.current.positionMs);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tuningContext]);
 
     // A different piece, or none: never carry a playhead across.
     useEffect(() => {

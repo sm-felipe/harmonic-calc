@@ -37,6 +37,8 @@ export const keys = Array.from({length: 13}, (_, i) => {
         fifths,
         tonicDegree: degreeOfFifthPosition(fifths),
         label: `${major} major / ${minor} minor`,
+        // for the sound bar, where "C major / A minor" would not fit
+        short: `${major}/${minor}m`,
     };
 });
 

@@ -29,6 +29,8 @@ const RELEASE_SECONDS = 0.08;
 // a moment of slack before the first note, so that starting does not already
 // leave the opening chord in the past
 const LEAD_IN_SECONDS = 0.08;
+// how long a partial takes to slide to its new pitch when the tuning changes
+const GLIDE_SECONDS = 0.04;
 
 export class ScorePlayer {
     context = null;
@@ -175,7 +177,40 @@ export class ScorePlayer {
             oscillators.push(oscillator);
         }
 
-        this.voices.push({endsAt: until + RELEASE_SECONDS, envelope, oscillators});
+        this.voices.push({endsAt: until + RELEASE_SECONDS, envelope, oscillators, note});
+    }
+
+    /**
+     * Moves what is already sounding onto a new tuning without restarting it.
+     * A retuning does not change which notes are being sung, only where their
+     * partials sit, so the oscillators can glide there — restarting instead
+     * would put a seam in the middle of every chord, which is exactly what you
+     * are trying to listen through when you compare two temperaments.
+     *
+     * Returns false and changes nothing when a voice would come out with a
+     * different set of partials, which no glide can express; the caller starts
+     * the piece again from where it is.
+     */
+    retune(tuningContext) {
+        let rows = [];
+        for (let voice of this.voices) {
+            let part = this.parts[voice.note.partIndex] || {instrument: defaultInstrument};
+            let [row] = calculateHarmonicMatrix(
+                [voice.note.pitchIndex], part.instrument, tuningContext, part.customLevels);
+            if (!row || row.harmonics.length !== voice.oscillators.length) {
+                return false;
+            }
+            rows.push(row);
+        }
+
+        this.tuningContext = tuningContext;
+        let now = this.context ? this.context.currentTime : 0;
+        this.voices.forEach((voice, index) => {
+            rows[index].harmonics.forEach((partial, which) => {
+                voice.oscillators[which].frequency.setTargetAtTime(partial.frequency, now, GLIDE_SECONDS);
+            });
+        });
+        return true;
     }
 
     finish() {

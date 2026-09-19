@@ -14,9 +14,12 @@ import {buildNoteNames, findKey} from "./spelling";
 const PYTHAGOREAN_FIFTH = 3 / 2;
 const MEANTONE_FIFTH = Math.pow(5, 1 / 4); // four of them make a pure 5:4 major third
 
+// `short` is what the sound bar shows when the menu is closed: the full names
+// do not fit a toolbar, least of all a phone's.
 export const temperaments = [
     {
         id: 'equal',
+        short: 'TET12',
         label: '12-tone equal temperament',
         description: 'Every semitone is 2^(1/12). All keys sound the same; fifths are 2 cents narrow, major thirds 14 cents wide. The key only decides how notes are spelled.',
         retunesByKey: false,
@@ -25,6 +28,7 @@ export const temperaments = [
     },
     {
         id: 'pythagorean',
+        short: 'Pyth',
         label: 'Pythagorean',
         description: 'A chain of pure 3:2 fifths. Perfect fifths and fourths; major thirds are 81:64, 22 cents wider than the 5:4 of the harmonic series.',
         retunesByKey: true,
@@ -33,6 +37,7 @@ export const temperaments = [
     },
     {
         id: 'just',
+        short: 'Just 5',
         label: 'Just intonation (5-limit)',
         description: 'Simple ratios from the tonic: 5:4 major thirds, 6:5 minor thirds, 3:2 fifths. Pure in the home key, increasingly off as you move away from it.',
         retunesByKey: true,
@@ -41,6 +46,7 @@ export const temperaments = [
     },
     {
         id: 'meantone',
+        short: 'Mean ¼',
         label: 'Quarter-comma meantone',
         description: 'Fifths narrowed by a quarter of the syntonic comma so that major thirds are pure 5:4. Sweet thirds in the common keys; a wolf fifth between G# and Eb.',
         retunesByKey: true,

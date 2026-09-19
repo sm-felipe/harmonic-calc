@@ -15,8 +15,11 @@ import {HarmonicPlayer} from "../service/audioPlayer";
  * `transport` is what useScorePlayer returns. When it is given the button drives
  * that instead, and this component's own player is silenced: two things making
  * sound at once is never what anyone wants, and there is only one volume slider.
+ *
+ * `children` sit between the clock and the volume — the tuning controls, when
+ * this is used as the sound bar.
  */
-export default function Player({harmonicMatrix, transport = null, onVolumeChange}) {
+export default function Player({harmonicMatrix, transport = null, onVolumeChange, children}) {
     let [playing, setPlaying] = useState(false);
     let [volume, setVolume] = useState(100);
     let [error, setError] = useState(null);
@@ -118,11 +121,11 @@ export default function Player({harmonicMatrix, transport = null, onVolumeChange
         }
     }
 
-    // The clock takes room the narrow desktop column does not have, so the row
-    // wraps and the volume control moves to a line of its own rather than
-    // shrinking to a stub.
+    // The clock and the tuning take room a narrow window does not have, so the
+    // row wraps and the volume moves to a line of its own rather than shrinking
+    // to a stub.
     return <Stack direction="row" spacing={2} useFlexGap
-                  sx={{alignItems: 'center', flexWrap: 'wrap', rowGap: 1}}>
+                  sx={{alignItems: 'center', flexWrap: 'wrap', rowGap: 1, width: '100%'}}>
         <Tooltip title={hint}>
             <span>
                 <Button variant="contained"
@@ -140,9 +143,15 @@ export default function Player({harmonicMatrix, transport = null, onVolumeChange
                 {clock(transport.positionMs)} / {clock(transport.durationMs)}
             </Typography>
         )}
+        {children}
         <Stack direction="row" spacing={1} useFlexGap
-               sx={{alignItems: 'center', flexGrow: 1, minWidth: 160}}>
-            <Typography variant="body2" color="text.secondary" sx={{flexShrink: 0}}>Volume</Typography>
+               sx={{alignItems: 'center', flexGrow: 1, minWidth: {xs: 96, sm: 160}, maxWidth: 320, ml: 'auto'}}>
+            {/* on a phone the word costs a row of the bar; the slider keeps its
+                label for anyone not reading the screen */}
+            <Typography variant="body2" color="text.secondary"
+                        sx={{flexShrink: 0, display: {xs: 'none', sm: 'block'}}}>
+                Volume
+            </Typography>
             <Slider aria-label="Volume"
                     value={volume}
                     min={0}
