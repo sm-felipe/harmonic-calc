@@ -10,6 +10,7 @@ import TuningOptions from "./components/TuningOptions";
 import DisplayOptions from "./components/DisplayOptions";
 import References from "./components/References";
 import Waveform from "./components/Waveform";
+import Lissajous from "./components/Lissajous";
 import QuickStart from "./components/QuickStart";
 import {loadExample, readExampleScore} from "./service/examples";
 import {decodeState, encodeState} from "./service/urlState";
@@ -298,6 +299,11 @@ function App() {
                         {display.showWave && (
                             <Box sx={{order: 3}}>
                                 <Waveform harmonicMatrix={harmonicMatrix} cycles={display.waveCycles}/>
+                            </Box>
+                        )}
+                        {display.showLissajous && (
+                            <Box sx={{order: 4}}>
+                                <Lissajous harmonicMatrix={harmonicMatrix}/>
                             </Box>
                         )}
                     </>}

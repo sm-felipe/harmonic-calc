@@ -32,5 +32,14 @@ export default function DisplayOptions({display, onChange}) {
             Draws the resulting sound under the spectrum. "Cycles" is how many wavelengths of the lowest note are
             shown: one shows the shape, more show the beating between notes.
         </Typography>
+        <FormControlLabel
+            control={<Switch checked={Boolean(display.showLissajous)}
+                             onChange={(event) => onChange({...display, showLissajous: event.target.checked})}/>}
+            label="Show Lissajous figure"
+            sx={{pt: 1}}/>
+        <Typography variant="caption" color="text.secondary" sx={{pl: 0.5}}>
+            Two notes' fundamentals traced against each other. An interval in an exact ratio closes the figure
+            and holds it still; a tempered one turns it, as fast as it beats.
+        </Typography>
     </Stack>;
 }

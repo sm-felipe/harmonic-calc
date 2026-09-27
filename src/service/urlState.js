@@ -16,6 +16,7 @@ import {CYCLE_OPTIONS, DEFAULT_CYCLES} from "./waveform";
 //      values, "."-separated, only when not the default.
 // t    temperament id      k  key id      a4  reference pitch in Hz
 // acc  accidentals (equal temperament)     wave  cycles, present when the wave is shown
+// liss present (=1) when the Lissajous figure is shown
 // snap present (=1) when partials are snapped onto the nearest note
 
 export function encodeState({groups, tuning, display}) {
@@ -33,6 +34,7 @@ export function encodeState({groups, tuning, display}) {
     if (tuning.accidentals && tuning.accidentals !== defaultTuning.accidentals) params.set('acc', tuning.accidentals);
     if (tuning.snap) params.set('snap', '1');
     if (display.showWave) params.set('wave', String(display.waveCycles));
+    if (display.showLissajous) params.set('liss', '1');
 
     // keep ":" "," ";" "~" readable instead of percent-encoded
     return params.toString().replace(/%3A/gi, ':').replace(/%2C/gi, ',').replace(/%3B/gi, ';').replace(/%7E/gi, '~');
@@ -69,9 +71,10 @@ export function decodeState(search) {
     if (accidentalOptions.some((option) => option.id === params.get('acc'))) tuning.accidentals = params.get('acc');
     tuning.snap = params.get('snap') === '1';
 
-    let display = {showWave: false, waveCycles: DEFAULT_CYCLES};
+    let display = {showWave: false, waveCycles: DEFAULT_CYCLES, showLissajous: false};
     let cycles = Number(params.get('wave'));
-    if (CYCLE_OPTIONS.includes(cycles)) display = {showWave: true, waveCycles: cycles};
+    if (CYCLE_OPTIONS.includes(cycles)) display = {...display, showWave: true, waveCycles: cycles};
+    display.showLissajous = params.get('liss') === '1';
 
     return {groups, tuning, display};
 }

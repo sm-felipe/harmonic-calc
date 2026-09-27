@@ -2,7 +2,7 @@ import {decodeState, encodeState} from './urlState';
 import {indexOfNote} from './notes';
 import {defaultTuning} from './temperaments';
 
-const display = {showWave: false, waveCycles: 3};
+const display = {showWave: false, waveCycles: 3, showLissajous: false};
 
 test('defaults produce an empty query', () => {
     expect(encodeState({groups: [{instrumentId: 'custom', notes: [], harmonicLevels: [0, -3, -6, -9, -12, -15, -18, -21, -24]}], tuning: defaultTuning, display})).toBe('');
@@ -15,7 +15,7 @@ test('groups, tuning and wave round-trip through a readable query', () => {
             {instrumentId: 'custom', notes: [indexOfNote('A3'), indexOfNote('E4')], harmonicLevels: [0, -30, -6, -30, -12, -30, -18, -30, -24]},
         ],
         tuning: {temperamentId: 'just', keyId: 'A', a4: 415, accidentals: 'flats', snap: true},
-        display: {showWave: true, waveCycles: 6},
+        display: {showWave: true, waveCycles: 6, showLissajous: false},
     };
     let query = encodeState(state);
     expect(query).toBe('g=bassoon:Bb1;custom:A3,E4~0.-30.-6.-30.-12.-30.-18.-30.-24&t=just&k=A&a4=415&acc=flats&snap=1&wave=6');
@@ -36,7 +36,7 @@ test('either spelling is accepted and junk is ignored', () => {
         {instrumentId: 'custom', notes: [indexOfNote('A4')]},   // malformed levels dropped
     ]);
     expect(decoded.tuning).toEqual(defaultTuning);
-    expect(decoded.display).toEqual({showWave: false, waveCycles: 3});
+    expect(decoded.display).toEqual({showWave: false, waveCycles: 3, showLissajous: false});
 });
 
 test('an empty second group is kept so the boxes come back as they were', () => {
@@ -50,4 +50,21 @@ test('sharps are written as flats so the link has no "#" in it', () => {
     let query = encodeState({groups: [{instrumentId: 'flute', notes: [indexOfNote('C#4'), indexOfNote('F#4')]}], tuning: defaultTuning, display});
     expect(query).toBe('g=flute:Db4,Gb4');
     expect(query).not.toContain('#');
+});
+
+test('the Lissajous figure is remembered in the link, and left out when off', () => {
+    let groups = [{instrumentId: 'voice-a', notes: [indexOfNote('A3'), indexOfNote('E4')]}];
+    let shown = encodeState({groups, tuning: defaultTuning, display: {...display, showLissajous: true}});
+    expect(shown).toContain('liss=1');
+    expect(decodeState('?' + shown).display.showLissajous).toBe(true);
+
+    let hidden = encodeState({groups, tuning: defaultTuning, display});
+    expect(hidden).not.toContain('liss');
+    expect(decodeState('?' + hidden).display.showLissajous).toBe(false);
+});
+
+test('the wave and the figure can be shown together', () => {
+    let both = {showWave: true, waveCycles: 4, showLissajous: true};
+    let query = encodeState({groups: [], tuning: defaultTuning, display: both});
+    expect(decodeState('?' + query).display).toEqual(both);
 });
